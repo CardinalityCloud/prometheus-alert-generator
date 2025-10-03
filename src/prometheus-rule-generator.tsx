@@ -59,15 +59,86 @@ export default function PrometheusRuleGenerator() {
   const [livenessQuery, setLivenessQuery] = useState('');
   const [livenessAvailabilityThreshold, setLivenessAvailabilityThreshold] = useState(80);
   const [errorBudgetWindow, setErrorBudgetWindow] = useState('30d');
-  const [sliMetric, setSliMetric] = useState('availability');
+  const [sliType, setSliType] = useState('availability');
+  const [customErrorQuery, setCustomErrorQuery] = useState('');
+  const [customTotalQuery, setCustomTotalQuery] = useState('');
   const [generatedPrometheus, setGeneratedPrometheus] = useState('');
   const [generatedSloth, setGeneratedSloth] = useState('');
   const [uploadError, setUploadError] = useState('');
+
+  // Calculate allowed downtime based on SLO target
+  const calculateDowntime = (sloPercent: number) => {
+    const downtimePercent = 100 - sloPercent;
+    const minutesPerMonth = 43200; // 30 days * 24 hours * 60 minutes
+    const minutesPerYear = 525600; // 365 days * 24 hours * 60 minutes
+
+    const downtimeMinutesMonth = (downtimePercent / 100) * minutesPerMonth;
+    const downtimeMinutesYear = (downtimePercent / 100) * minutesPerYear;
+
+    // Format based on magnitude
+    const formatTime = (minutes: number) => {
+      if (minutes < 1) {
+        return `${(minutes * 60).toFixed(1)}s`;
+      } else if (minutes < 60) {
+        return `${minutes.toFixed(1)}m`;
+      } else {
+        const hours = minutes / 60;
+        return `${hours.toFixed(1)}h`;
+      }
+    };
+
+    return {
+      perMonth: formatTime(downtimeMinutesMonth),
+      perYear: formatTime(downtimeMinutesYear),
+    };
+  };
 
   const generateRules = () => {
     const errorBudget = 100 - sloTarget;
     const effectiveLivenessQuery = livenessQuery || `up{job="${appName}", namespace="${namespace}"}`;
     const availabilityThresholdDecimal = livenessAvailabilityThreshold / 100;
+
+    // Determine error and total queries based on SLI type
+    let errorQuery5m, totalQuery5m, errorQuery1h, totalQuery1h, errorQuery6h, totalQuery6h, errorQueryWindow, totalQueryWindow;
+    let sliName = '';
+    let sliDescription = '';
+
+    if (sliType === 'availability') {
+      sliName = 'availability';
+      sliDescription = 'HTTP request success rate';
+      errorQuery5m = `sum(rate(http_requests_total{job="${appName}", namespace="${namespace}", code=~"5.."}[5m]))`;
+      totalQuery5m = `sum(rate(http_requests_total{job="${appName}", namespace="${namespace}"}[5m]))`;
+      errorQuery1h = `sum(rate(http_requests_total{job="${appName}", namespace="${namespace}", code=~"5.."}[1h]))`;
+      totalQuery1h = `sum(rate(http_requests_total{job="${appName}", namespace="${namespace}"}[1h]))`;
+      errorQuery6h = `sum(rate(http_requests_total{job="${appName}", namespace="${namespace}", code=~"5.."}[6h]))`;
+      totalQuery6h = `sum(rate(http_requests_total{job="${appName}", namespace="${namespace}"}[6h]))`;
+      errorQueryWindow = `sum(rate(http_requests_total{job="${appName}",namespace="${namespace}",code=~"5.."}[{{.window}}]))`;
+      totalQueryWindow = `sum(rate(http_requests_total{job="${appName}",namespace="${namespace}"}[{{.window}}]))`;
+    } else if (sliType === 'latency') {
+      sliName = 'latency';
+      sliDescription = 'requests completing under 1 second';
+      // For latency, "errors" are slow requests (> threshold)
+      errorQuery5m = `sum(rate(http_request_duration_seconds_count{job="${appName}", namespace="${namespace}"}[5m])) - sum(rate(http_request_duration_seconds_bucket{job="${appName}", namespace="${namespace}", le="1"}[5m]))`;
+      totalQuery5m = `sum(rate(http_request_duration_seconds_count{job="${appName}", namespace="${namespace}"}[5m]))`;
+      errorQuery1h = `sum(rate(http_request_duration_seconds_count{job="${appName}", namespace="${namespace}"}[1h])) - sum(rate(http_request_duration_seconds_bucket{job="${appName}", namespace="${namespace}", le="1"}[1h]))`;
+      totalQuery1h = `sum(rate(http_request_duration_seconds_count{job="${appName}", namespace="${namespace}"}[1h]))`;
+      errorQuery6h = `sum(rate(http_request_duration_seconds_count{job="${appName}", namespace="${namespace}"}[6h])) - sum(rate(http_request_duration_seconds_bucket{job="${appName}", namespace="${namespace}", le="1"}[6h]))`;
+      totalQuery6h = `sum(rate(http_request_duration_seconds_count{job="${appName}", namespace="${namespace}"}[6h]))`;
+      errorQueryWindow = `sum(rate(http_request_duration_seconds_count{job="${appName}",namespace="${namespace}"}[{{.window}}])) - sum(rate(http_request_duration_seconds_bucket{job="${appName}",namespace="${namespace}",le="1"}[{{.window}}]))`;
+      totalQueryWindow = `sum(rate(http_request_duration_seconds_count{job="${appName}",namespace="${namespace}"}[{{.window}}]))`;
+    } else if (sliType === 'custom') {
+      sliName = 'custom';
+      sliDescription = 'custom SLI queries';
+      // Replace {{.window}} with actual time windows for Prometheus rules
+      errorQuery5m = customErrorQuery.replace(/\{\{\.window\}\}/g, '5m');
+      totalQuery5m = customTotalQuery.replace(/\{\{\.window\}\}/g, '5m');
+      errorQuery1h = customErrorQuery.replace(/\{\{\.window\}\}/g, '1h');
+      totalQuery1h = customTotalQuery.replace(/\{\{\.window\}\}/g, '1h');
+      errorQuery6h = customErrorQuery.replace(/\{\{\.window\}\}/g, '6h');
+      totalQuery6h = customTotalQuery.replace(/\{\{\.window\}\}/g, '6h');
+      errorQueryWindow = customErrorQuery;
+      totalQueryWindow = customTotalQuery;
+    }
 
     // Generate Prometheus Rules - Always include liveness alert
     let prometheusYaml = `groups:
@@ -89,19 +160,21 @@ export default function PrometheusRuleGenerator() {
 
     // Add SLO rules only if enabled
     if (sloEnabled) {
+      const successQuery5m = `(${totalQuery5m}) - (${errorQuery5m})`;
+
       prometheusYaml += `
 
-      # SLO: Availability
-      - record: ${appName}:availability:ratio_rate5m
+      # SLO: ${sliName.charAt(0).toUpperCase() + sliName.slice(1)}
+      - record: ${appName}:${sliName}:ratio_rate5m
         expr: |
-          sum(rate(http_requests_total{job="${appName}", namespace="${namespace}", code!~"5.."}[5m]))
+          (${successQuery5m})
           /
-          sum(rate(http_requests_total{job="${appName}", namespace="${namespace}"}[5m]))
+          (${totalQuery5m})
 
-      - alert: ${appName}AvailabilitySLOBreach
+      - alert: ${appName}SLOBreach
         expr: |
           (
-            1 - ${appName}:availability:ratio_rate5m
+            1 - ${appName}:${sliName}:ratio_rate5m
           ) * 100 > ${errorBudget}
         for: 5m
         labels:
@@ -109,18 +182,16 @@ export default function PrometheusRuleGenerator() {
           component: ${appName}
           alert_type: slo_breach
         annotations:
-          summary: "${appName} availability SLO breach"
-          description: "Error rate for ${appName} is {{ $value | humanizePercentage }}, exceeding the error budget of ${errorBudget}% (SLO target: ${sloTarget}%)."
+          summary: "${appName} ${sliName} SLO breach"
+          description: "Error rate for ${appName} ${sliName} SLI is {{ $value | humanizePercentage }}, exceeding the error budget of ${errorBudget}% (SLO target: ${sloTarget}%)."
 
       # SLO: Error Budget Burn Rate (Fast Burn - 1h window)
       - alert: ${appName}ErrorBudgetFastBurn
         expr: |
           (
-            1 - (
-              sum(rate(http_requests_total{job="${appName}", namespace="${namespace}", code!~"5.."}[1h]))
-              /
-              sum(rate(http_requests_total{job="${appName}", namespace="${namespace}"}[1h]))
-            )
+            (${errorQuery1h})
+            /
+            (${totalQuery1h})
           ) > (${errorBudget / 100} * 14.4)
         for: 2m
         labels:
@@ -136,11 +207,9 @@ export default function PrometheusRuleGenerator() {
       - alert: ${appName}ErrorBudgetSlowBurn
         expr: |
           (
-            1 - (
-              sum(rate(http_requests_total{job="${appName}", namespace="${namespace}", code!~"5.."}[6h]))
-              /
-              sum(rate(http_requests_total{job="${appName}", namespace="${namespace}"}[6h]))
-            )
+            (${errorQuery6h})
+            /
+            (${totalQuery6h})
           ) > (${errorBudget / 100} * 6)
         for: 15m
         labels:
@@ -151,24 +220,6 @@ export default function PrometheusRuleGenerator() {
         annotations:
           summary: "${appName} is burning error budget steadily"
           description: "Slow burn rate detected. At this rate, the entire ${errorBudgetWindow} error budget will be exhausted in ~5 days. Current error rate: {{ $value | humanizePercentage }}."
-
-      # SLO: Latency P99
-      - record: ${appName}:latency:p99_5m
-        expr: |
-          histogram_quantile(0.99,
-            sum(rate(http_request_duration_seconds_bucket{job="${appName}", namespace="${namespace}"}[5m])) by (le)
-          )
-
-      - alert: ${appName}HighLatency
-        expr: ${appName}:latency:p99_5m > 1
-        for: 10m
-        labels:
-          severity: warning
-          component: ${appName}
-          alert_type: latency
-        annotations:
-          summary: "${appName} high latency detected"
-          description: "P99 latency for ${appName} is {{ $value | humanizeDuration }}, exceeding 1 second threshold."
 
       # Error Budget Remaining (Recording Rule)
       - record: ${appName}:error_budget:remaining_ratio_${errorBudgetWindow}
@@ -192,20 +243,20 @@ labels:
   repo: "${appName}"
   tier: "1"
 slos:
-  - name: "${appName}-availability"
+  - name: "${appName}-${sliName}"
     objective: ${sloTarget}
-    description: "Availability SLO for ${appName} based on HTTP request success rate"
+    description: "${sliDescription} SLO for ${appName}"
     sli:
       events:
-        error_query: sum(rate(http_requests_total{job="${appName}",namespace="${namespace}",code=~"5.."}[{{.window}}]))
-        total_query: sum(rate(http_requests_total{job="${appName}",namespace="${namespace}"}[{{.window}}]))
+        error_query: ${errorQueryWindow}
+        total_query: ${totalQueryWindow}
     alerting:
-      name: ${appName}AvailabilityAlert
+      name: ${appName}${sliName.charAt(0).toUpperCase() + sliName.slice(1)}Alert
       labels:
         component: "${appName}"
         namespace: "${namespace}"
       annotations:
-        summary: "High error rate on ${appName}"
+        summary: "SLO breach for ${appName} ${sliName}"
         description: "Error budget is being consumed too fast for ${appName} in ${namespace}"
       page_alert:
         labels:
@@ -214,31 +265,6 @@ slos:
       ticket_alert:
         labels:
           severity: warning
-          alert_type: ticket
-  
-  - name: "${appName}-latency"
-    objective: ${sloTarget}
-    description: "Latency SLO for ${appName} - P99 latency under 1 second"
-    sli:
-      events:
-        error_query: |
-          sum(rate(http_request_duration_seconds_bucket{job="${appName}",namespace="${namespace}",le="1"}[{{.window}}]))
-        total_query: sum(rate(http_request_duration_seconds_count{job="${appName}",namespace="${namespace}"}[{{.window}}]))
-    alerting:
-      name: ${appName}LatencyAlert
-      labels:
-        component: "${appName}"
-        namespace: "${namespace}"
-      annotations:
-        summary: "High latency on ${appName}"
-        description: "Too many requests are exceeding 1s latency threshold for ${appName}"
-      page_alert:
-        labels:
-          severity: warning
-          alert_type: page
-      ticket_alert:
-        labels:
-          severity: info
           alert_type: ticket`;
     }
 
@@ -516,7 +542,7 @@ slos:
                     <Stack spacing="md">
                       <Switch
                         label="Generate SLO-based alerts and Sloth spec"
-                        description="Enable to generate error budget burn rate alerts, latency SLOs, and Sloth specifications"
+                        description="Enable to generate error budget burn rate alerts and Sloth specifications"
                         checked={sloEnabled}
                         onChange={(e) => setSloEnabled(e.currentTarget.checked)}
                         size="md"
@@ -525,21 +551,101 @@ slos:
                         }}
                       />
 
-                      <NumberInput
-                        label="SLO Target (%)"
-                        description="Target availability percentage (e.g., 99.9% = 'three nines')"
-                        value={sloTarget}
-                        onChange={setSloTarget}
-                        min={90}
-                        max={100}
-                        step={0.1}
-                        precision={2}
+                      <Select
+                        label="SLI Type"
+                        description="Choose the type of Service Level Indicator to measure"
+                        value={sliType}
+                        onChange={setSliType}
+                        data={[
+                          { value: 'availability', label: 'Availability (HTTP request success rate)' },
+                          { value: 'latency', label: 'Latency (requests under threshold)' },
+                          { value: 'custom', label: 'Custom (define your own queries)' },
+                        ]}
                         size="md"
                         disabled={!sloEnabled}
                         styles={{
                           label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 }
                         }}
                       />
+
+                      {sloEnabled && sliType === 'custom' && (
+                        <>
+                          <Textarea
+                            label="Error Query"
+                            description="PromQL query for 'bad' events. Use {{.window}} as placeholder for time window (Sloth format). Example: sum(rate(http_requests_total{job='my-app',code=~'5..'}[{{.window}}]))"
+                            placeholder="sum(rate(http_requests_total{job='my-app',code=~'5..'}[{{.window}}]))"
+                            value={customErrorQuery}
+                            onChange={(e) => setCustomErrorQuery(e.target.value)}
+                            minRows={3}
+                            autosize
+                            size="md"
+                            styles={{
+                              label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 },
+                              input: { fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.9rem' }
+                            }}
+                          />
+
+                          <Textarea
+                            label="Total Query"
+                            description="PromQL query for total events. Use {{.window}} as placeholder for time window (Sloth format). Example: sum(rate(http_requests_total{job='my-app'}[{{.window}}]))"
+                            placeholder="sum(rate(http_requests_total{job='my-app'}[{{.window}}]))"
+                            value={customTotalQuery}
+                            onChange={(e) => setCustomTotalQuery(e.target.value)}
+                            minRows={3}
+                            autosize
+                            size="md"
+                            styles={{
+                              label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 },
+                              input: { fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.9rem' }
+                            }}
+                          />
+                        </>
+                      )}
+
+                      <Select
+                        label="SLO Target"
+                        description="Target availability/reliability percentage based on industry-standard SLO tiers"
+                        value={sloTarget.toString()}
+                        onChange={(value) => setSloTarget(parseFloat(value))}
+                        data={[
+                          { value: '95', label: '95% (one nine)' },
+                          { value: '99', label: '99% (two nines)' },
+                          { value: '99.9', label: '99.9% (three nines)' },
+                          { value: '99.99', label: '99.99% (four nines)' },
+                          { value: '99.999', label: '99.999% (five nines)' },
+                        ]}
+                        size="md"
+                        disabled={!sloEnabled}
+                        styles={{
+                          label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 }
+                        }}
+                      />
+
+                      {sloEnabled && (() => {
+                        const downtime = calculateDowntime(sloTarget);
+                        return (
+                          <Paper p="md" withBorder style={{ backgroundColor: '#e7f5ff', borderColor: '#339af0' }}>
+                            <Group spacing="md" position="apart">
+                              <div>
+                                <Text size="xs" fw={600} c="dimmed" mb={4}>ALLOWED DOWNTIME</Text>
+                                <Group spacing="xl">
+                                  <div>
+                                    <Text size="sm" c="dimmed" style={{ fontSize: '0.75rem' }}>Per Month</Text>
+                                    <Text size="lg" fw={700} c="#1971c2">{downtime.perMonth}</Text>
+                                  </div>
+                                  <div>
+                                    <Text size="sm" c="dimmed" style={{ fontSize: '0.75rem' }}>Per Year</Text>
+                                    <Text size="lg" fw={700} c="#1971c2">{downtime.perYear}</Text>
+                                  </div>
+                                </Group>
+                              </div>
+                              <Text size="xs" c="dimmed" style={{ maxWidth: '200px' }}>
+                                Maximum acceptable downtime for {sloTarget}% SLO target
+                              </Text>
+                            </Group>
+                          </Paper>
+                        );
+                      })()}
 
                       <Select
                         label="Error Budget Window"
@@ -756,6 +862,48 @@ slos:
               </div>
             </Paper>
           )}
+
+          {/* Footer */}
+          <Paper
+            p="xl"
+            radius="lg"
+            style={{
+              background: 'rgba(255, 255, 255, 0.95)',
+              textAlign: 'center',
+              marginTop: '3rem',
+            }}
+          >
+            <Divider mb="md" />
+            <Group position="center" spacing="xl">
+              <Text size="sm" c="dimmed">
+                Built by <a
+                  href="https://cardinality.cloud/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: '#667eea',
+                    textDecoration: 'none',
+                    fontWeight: 600
+                  }}
+                >
+                  Cardinality Cloud, LLC
+                </a>
+              </Text>
+              <Text size="sm" c="dimmed">•</Text>
+              <Text size="sm">
+                <a
+                  href="mailto:jjneely@cardinality.cloud?subject=Prometheus Rule Generator Feedback"
+                  style={{
+                    color: '#667eea',
+                    textDecoration: 'none',
+                    fontWeight: 600
+                  }}
+                >
+                  Give Feedback
+                </a>
+              </Text>
+            </Group>
+          </Paper>
         </Stack>
       </Container>
       </div>
