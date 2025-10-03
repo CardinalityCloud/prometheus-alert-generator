@@ -51,7 +51,6 @@ const theme = createTheme({
 
 export default function PrometheusRuleGenerator() {
   const [appName, setAppName] = useState('');
-  const [namespace, setNamespace] = useState('');
   const [sloEnabled, setSloEnabled] = useState(true);
   const [sloTarget, setSloTarget] = useState(99.9);
   const [evaluationInterval, setEvaluationInterval] = useState('1m');
@@ -117,28 +116,28 @@ export default function PrometheusRuleGenerator() {
 
     const customLabelsFormatted = parseCustomLabels(customAlertLabels);
 
-    // Build label selectors with optional namespace
-    const namespaceLabel = namespace ? `, namespace="${namespace}"` : '';
-    const defaultLivenessQuery = `up{job="${appName}"${namespaceLabel}}`;
+    const defaultLivenessQuery = `up{job="${appName}"}`;
     const effectiveLivenessQuery = livenessQuery || defaultLivenessQuery;
     const availabilityThresholdDecimal = livenessAvailabilityThreshold / 100;
 
-    // Use default availability queries if user hasn't provided custom ones
-    const defaultErrorQuery = `sum(rate(http_requests_total{job="${appName}"${namespaceLabel},code=~"5.."}[{{.window}}]))`;
-    const defaultTotalQuery = `sum(rate(http_requests_total{job="${appName}"${namespaceLabel}}[{{.window}}]))`;
+    // Use default raw metric names if user hasn't provided custom ones
+    const defaultErrorMetric = `http_requests_total{job="${appName}",code=~"5.."}`;
+    const defaultTotalMetric = `http_requests_total{job="${appName}"}`;
 
-    const effectiveErrorQuery = errorQuery || defaultErrorQuery;
-    const effectiveTotalQuery = totalQuery || defaultTotalQuery;
+    const effectiveErrorMetric = errorQuery || defaultErrorMetric;
+    const effectiveTotalMetric = totalQuery || defaultTotalMetric;
 
-    // Replace {{.window}} with actual time windows for Prometheus rules
-    const errorQuery5m = effectiveErrorQuery.replace(/\{\{\.window\}\}/g, '5m');
-    const totalQuery5m = effectiveTotalQuery.replace(/\{\{\.window\}\}/g, '5m');
-    const errorQuery1h = effectiveErrorQuery.replace(/\{\{\.window\}\}/g, '1h');
-    const totalQuery1h = effectiveTotalQuery.replace(/\{\{\.window\}\}/g, '1h');
-    const errorQuery6h = effectiveErrorQuery.replace(/\{\{\.window\}\}/g, '6h');
-    const totalQuery6h = effectiveTotalQuery.replace(/\{\{\.window\}\}/g, '6h');
-    const errorQueryWindow = effectiveErrorQuery;
-    const totalQueryWindow = effectiveTotalQuery;
+    // Wrap user's raw metrics with sum(rate()) for different time windows
+    const errorQuery5m = `sum(rate(${effectiveErrorMetric}[5m]))`;
+    const totalQuery5m = `sum(rate(${effectiveTotalMetric}[5m]))`;
+    const errorQuery1h = `sum(rate(${effectiveErrorMetric}[1h]))`;
+    const totalQuery1h = `sum(rate(${effectiveTotalMetric}[1h]))`;
+    const errorQuery6h = `sum(rate(${effectiveErrorMetric}[6h]))`;
+    const totalQuery6h = `sum(rate(${effectiveTotalMetric}[6h]))`;
+
+    // For Sloth, use {{.window}} placeholder
+    const errorQueryWindow = `sum(rate(${effectiveErrorMetric}[{{.window}}]))`;
+    const totalQueryWindow = `sum(rate(${effectiveTotalMetric}[{{.window}}]))`;
 
     // Generate Prometheus Rules - Always include liveness alert
     let prometheusYaml = `groups:
@@ -155,7 +154,7 @@ export default function PrometheusRuleGenerator() {
           component: ${appName}
           alert_type: liveness${customLabelsFormatted}
         annotations:
-          summary: "${appName} availability below ${livenessAvailabilityThreshold}% in ${namespace}"
+          summary: "${appName} availability below ${livenessAvailabilityThreshold}%"
           description: "Less than ${livenessAvailabilityThreshold}% of ${appName} instances are up. Current availability: {{ $value | humanizePercentage }}"`;
 
     // Add SLO rules only if enabled
@@ -226,9 +225,9 @@ export default function PrometheusRuleGenerator() {
         expr: |
           1 - (
             (
-              sum(increase(http_requests_total{job="${appName}", namespace="${namespace}", code=~"5.."}[${errorBudgetWindow}]))
+              sum(increase(http_requests_total{job="${appName}", code=~"5.."}[${errorBudgetWindow}]))
               /
-              sum(increase(http_requests_total{job="${appName}", namespace="${namespace}"}[${errorBudgetWindow}]))
+              sum(increase(http_requests_total{job="${appName}"}[${errorBudgetWindow}]))
             ) / ${errorBudget / 100}
           )`;
     }
@@ -236,9 +235,6 @@ export default function PrometheusRuleGenerator() {
     // Generate Sloth SLO Spec (only if SLO is enabled)
     let slothYaml = '';
     if (sloEnabled) {
-      const namespaceDescription = namespace ? ` in ${namespace}` : '';
-      const namespaceAlertLabel = namespace ? `\n        namespace: "${namespace}"` : '';
-
       slothYaml = `version: "prometheus/v1"
 service: "${appName}"
 labels:
@@ -256,10 +252,10 @@ slos:
     alerting:
       name: ${appName}SLOAlert
       labels:
-        component: "${appName}"${namespaceAlertLabel}
+        component: "${appName}"
       annotations:
         summary: "SLO breach for ${appName}"
-        description: "Error budget is being consumed too fast for ${appName}${namespaceDescription}"
+        description: "Error budget is being consumed too fast for ${appName}"
       page_alert:
         labels:
           severity: critical
@@ -293,15 +289,9 @@ slos:
           setSloTarget(firstSlo.objective);
         }
 
-        // Try to extract namespace from queries
-        const errorQuery = firstSlo.sli?.events?.error_query || '';
-        const namespaceMatch = errorQuery.match(/namespace="([^"]+)"/);
-        if (namespaceMatch) {
-          setNamespace(namespaceMatch[1]);
-        }
-
-        // Try to extract job name
-        const jobMatch = errorQuery.match(/job="([^"]+)"/);
+        // Try to extract job name from error query
+        const errorQueryStr = firstSlo.sli?.events?.error_query || '';
+        const jobMatch = errorQueryStr.match(/job="([^"]+)"/);
         if (jobMatch && !parsed.service) {
           setAppName(jobMatch[1]);
         }
@@ -369,9 +359,9 @@ slos:
                     fontWeight: 700,
                   }}
                 >
-                  Prometheus Rule Generator
+                  Free Prometheus Alert Rule Generator
                 </Title>
-                <Text c="dimmed" size="lg">Generate Prometheus alerting rules and Sloth SLO specs for comprehensive monitoring</Text>
+                <Text c="dimmed" size="lg">Generate Prometheus alerting rules and SLOs for comprehensive monitoring.</Text>
                 <Text size="sm" c="dimmed" mt="xs" style={{ fontWeight: 500 }}>
                   Brought to you by <a href="https://cardinality.cloud/" target="_blank" rel="noopener noreferrer" style={{ color: '#667eea', textDecoration: 'none', fontWeight: 600 }}>Cardinality Cloud, LLC</a>.
                 </Text>
@@ -438,18 +428,6 @@ slos:
                       label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 }
                     }}
                   />
-
-                  <TextInput
-                    label="Namespace (Optional)"
-                    description="Kubernetes namespace or environment identifier (e.g., 'production', 'staging'). Used as a label filter in queries. Leave empty if not using namespaces."
-                    placeholder="production"
-                    value={namespace}
-                    onChange={(e) => setNamespace(e.target.value)}
-                    size="md"
-                    styles={{
-                      label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 }
-                    }}
-                  />
                 </Stack>
               </Paper>
 
@@ -485,7 +463,7 @@ slos:
                       <Textarea
                         label="Liveness PromQL Query"
                         description="PromQL expression that returns 1 (up) or 0 (down) for each instance. Defaults to up{job='...'} using the Application Name above if left empty."
-                        placeholder={namespace ? `up{job="${appName || 'my-app'}", namespace="${namespace}"}` : `up{job="${appName || 'my-app'}"}`}
+                        placeholder={`up{job="${appName || 'my-app'}"}`}
                         value={livenessQuery}
                         onChange={(e) => setLivenessQuery(e.target.value)}
                         minRows={3}
@@ -555,12 +533,12 @@ slos:
                       />
 
                       <Textarea
-                        label="Error Query"
-                        description="PromQL query for 'bad' events. Use {{.window}} as placeholder for time window (Sloth format). Uses Application Name as job label. Defaults to HTTP 5xx errors if left empty."
-                        placeholder={namespace ? `sum(rate(http_requests_total{job="${appName || 'my-app'}",namespace="${namespace}",code=~"5.."}[{{.window}}]))` : `sum(rate(http_requests_total{job="${appName || 'my-app'}",code=~"5.."}[{{.window}}]))`}
+                        label="Error Metric (Counter)"
+                        description="Raw Prometheus Counter metric for 'bad' events. Just provide the metric name and labels - we'll automatically wrap it with sum(rate()). Defaults to HTTP 5xx errors if left empty."
+                        placeholder={`http_requests_total{job="${appName || 'my-app'}",code=~"5.."}`}
                         value={errorQuery}
                         onChange={(e) => setErrorQuery(e.target.value)}
-                        minRows={3}
+                        minRows={2}
                         autosize
                         size="md"
                         disabled={!sloEnabled}
@@ -571,12 +549,12 @@ slos:
                       />
 
                       <Textarea
-                        label="Total Query"
-                        description="PromQL query for total events. Use {{.window}} as placeholder for time window (Sloth format). Uses Application Name as job label. Defaults to all HTTP requests if left empty."
-                        placeholder={namespace ? `sum(rate(http_requests_total{job="${appName || 'my-app'}",namespace="${namespace}"}[{{.window}}]))` : `sum(rate(http_requests_total{job="${appName || 'my-app'}"}[{{.window}}]))`}
+                        label="Total Metric (Counter)"
+                        description="Raw Prometheus Counter metric for total events. Just provide the metric name and labels - we'll automatically wrap it with sum(rate()). Defaults to all HTTP requests if left empty."
+                        placeholder={`http_requests_total{job="${appName || 'my-app'}"}`}
                         value={totalQuery}
                         onChange={(e) => setTotalQuery(e.target.value)}
-                        minRows={3}
+                        minRows={2}
                         autosize
                         size="md"
                         disabled={!sloEnabled}
@@ -829,7 +807,7 @@ slos:
               <Text size="sm" c="dimmed">
                 <strong>Required Metrics:</strong>
                 <ul style={{ marginTop: '8px', marginBottom: '0' }}>
-                  <li><code>{livenessQuery || `up{job="${appName}", namespace="${namespace}"}`}</code> - Liveness checks</li>
+                  <li><code>{livenessQuery || `up{job="${appName}"}`}</code> - Liveness checks</li>
                   {sloEnabled && (
                     <>
                       <li><code>http_requests_total</code> - Request counter with <code>code</code> label</li>
