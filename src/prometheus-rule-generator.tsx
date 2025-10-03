@@ -61,6 +61,7 @@ export default function PrometheusRuleGenerator() {
   const [errorBudgetWindow, setErrorBudgetWindow] = useState('30d');
   const [errorQuery, setErrorQuery] = useState('');
   const [totalQuery, setTotalQuery] = useState('');
+  const [customAlertLabels, setCustomAlertLabels] = useState('');
   const [generatedPrometheus, setGeneratedPrometheus] = useState('');
   const [generatedSloth, setGeneratedSloth] = useState('');
   const [uploadError, setUploadError] = useState('');
@@ -94,12 +95,37 @@ export default function PrometheusRuleGenerator() {
 
   const generateRules = () => {
     const errorBudget = 100 - sloTarget;
-    const effectiveLivenessQuery = livenessQuery || `up{job="${appName}", namespace="${namespace}"}`;
+
+    // Parse custom alert labels
+    const parseCustomLabels = (labelsText: string): string => {
+      if (!labelsText.trim()) return '';
+
+      const lines = labelsText.split('\n').filter(line => line.trim());
+      const labelLines = lines
+        .map(line => {
+          const [key, ...valueParts] = line.split(':');
+          if (key && valueParts.length > 0) {
+            const value = valueParts.join(':').trim();
+            return `          ${key.trim()}: ${value}`;
+          }
+          return null;
+        })
+        .filter(Boolean);
+
+      return labelLines.length > 0 ? '\n' + labelLines.join('\n') : '';
+    };
+
+    const customLabelsFormatted = parseCustomLabels(customAlertLabels);
+
+    // Build label selectors with optional namespace
+    const namespaceLabel = namespace ? `, namespace="${namespace}"` : '';
+    const defaultLivenessQuery = `up{job="${appName}"${namespaceLabel}}`;
+    const effectiveLivenessQuery = livenessQuery || defaultLivenessQuery;
     const availabilityThresholdDecimal = livenessAvailabilityThreshold / 100;
 
     // Use default availability queries if user hasn't provided custom ones
-    const defaultErrorQuery = `sum(rate(http_requests_total{job="${appName}",namespace="${namespace}",code=~"5.."}[{{.window}}]))`;
-    const defaultTotalQuery = `sum(rate(http_requests_total{job="${appName}",namespace="${namespace}"}[{{.window}}]))`;
+    const defaultErrorQuery = `sum(rate(http_requests_total{job="${appName}"${namespaceLabel},code=~"5.."}[{{.window}}]))`;
+    const defaultTotalQuery = `sum(rate(http_requests_total{job="${appName}"${namespaceLabel}}[{{.window}}]))`;
 
     const effectiveErrorQuery = errorQuery || defaultErrorQuery;
     const effectiveTotalQuery = totalQuery || defaultTotalQuery;
@@ -127,7 +153,7 @@ export default function PrometheusRuleGenerator() {
         labels:
           severity: critical
           component: ${appName}
-          alert_type: liveness
+          alert_type: liveness${customLabelsFormatted}
         annotations:
           summary: "${appName} availability below ${livenessAvailabilityThreshold}% in ${namespace}"
           description: "Less than ${livenessAvailabilityThreshold}% of ${appName} instances are up. Current availability: {{ $value | humanizePercentage }}"`;
@@ -154,7 +180,7 @@ export default function PrometheusRuleGenerator() {
         labels:
           severity: warning
           component: ${appName}
-          alert_type: slo_breach
+          alert_type: slo_breach${customLabelsFormatted}
         annotations:
           summary: "${appName} SLO breach"
           description: "Error rate for ${appName} is {{ $value | humanizePercentage }}, exceeding the error budget of ${errorBudget}% (SLO target: ${sloTarget}%)."
@@ -172,7 +198,7 @@ export default function PrometheusRuleGenerator() {
           severity: critical
           component: ${appName}
           alert_type: error_budget_burn
-          burn_rate: fast
+          burn_rate: fast${customLabelsFormatted}
         annotations:
           summary: "${appName} is burning error budget rapidly"
           description: "Fast burn rate detected. At this rate, the entire ${errorBudgetWindow} error budget will be exhausted in ~2 days. Current error rate: {{ $value | humanizePercentage }}."
@@ -190,7 +216,7 @@ export default function PrometheusRuleGenerator() {
           severity: warning
           component: ${appName}
           alert_type: error_budget_burn
-          burn_rate: slow
+          burn_rate: slow${customLabelsFormatted}
         annotations:
           summary: "${appName} is burning error budget steadily"
           description: "Slow burn rate detected. At this rate, the entire ${errorBudgetWindow} error budget will be exhausted in ~5 days. Current error rate: {{ $value | humanizePercentage }}."
@@ -210,6 +236,9 @@ export default function PrometheusRuleGenerator() {
     // Generate Sloth SLO Spec (only if SLO is enabled)
     let slothYaml = '';
     if (sloEnabled) {
+      const namespaceDescription = namespace ? ` in ${namespace}` : '';
+      const namespaceAlertLabel = namespace ? `\n        namespace: "${namespace}"` : '';
+
       slothYaml = `version: "prometheus/v1"
 service: "${appName}"
 labels:
@@ -227,11 +256,10 @@ slos:
     alerting:
       name: ${appName}SLOAlert
       labels:
-        component: "${appName}"
-        namespace: "${namespace}"
+        component: "${appName}"${namespaceAlertLabel}
       annotations:
         summary: "SLO breach for ${appName}"
-        description: "Error budget is being consumed too fast for ${appName} in ${namespace}"
+        description: "Error budget is being consumed too fast for ${appName}${namespaceDescription}"
       page_alert:
         labels:
           severity: critical
@@ -399,7 +427,8 @@ slos:
                   </Group>
 
                   <TextInput
-                    label="Application Name"
+                    label="Application Name / Job Name"
+                    description="Used as the job label in queries and as the base name for all generated rules and alerts"
                     placeholder="my-api"
                     value={appName}
                     onChange={(e) => setAppName(e.target.value)}
@@ -411,11 +440,11 @@ slos:
                   />
 
                   <TextInput
-                    label="Namespace"
+                    label="Namespace (Optional)"
+                    description="Kubernetes namespace or environment identifier (e.g., 'production', 'staging'). Used as a label filter in queries. Leave empty if not using namespaces."
                     placeholder="production"
                     value={namespace}
                     onChange={(e) => setNamespace(e.target.value)}
-                    required
                     size="md"
                     styles={{
                       label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 }
@@ -455,8 +484,8 @@ slos:
                     <Stack spacing="lg">
                       <Textarea
                         label="Liveness PromQL Query"
-                        description="PromQL expression that returns 1 (up) or 0 (down) for each instance. Example: up{job='my-app', namespace='production'}"
-                        placeholder={`up{job="${appName || 'my-app'}", namespace="${namespace || 'production'}"}`}
+                        description="PromQL expression that returns 1 (up) or 0 (down) for each instance. Defaults to up{job='...'} using the Application Name above if left empty."
+                        placeholder={namespace ? `up{job="${appName || 'my-app'}", namespace="${namespace}"}` : `up{job="${appName || 'my-app'}"}`}
                         value={livenessQuery}
                         onChange={(e) => setLivenessQuery(e.target.value)}
                         minRows={3}
@@ -527,8 +556,8 @@ slos:
 
                       <Textarea
                         label="Error Query"
-                        description="PromQL query for 'bad' events. Use {{.window}} as placeholder for time window (Sloth format). Defaults to HTTP 5xx errors if left empty."
-                        placeholder={`sum(rate(http_requests_total{job="${appName || 'my-app'}",namespace="${namespace || 'production'}",code=~"5.."}[{{.window}}]))`}
+                        description="PromQL query for 'bad' events. Use {{.window}} as placeholder for time window (Sloth format). Uses Application Name as job label. Defaults to HTTP 5xx errors if left empty."
+                        placeholder={namespace ? `sum(rate(http_requests_total{job="${appName || 'my-app'}",namespace="${namespace}",code=~"5.."}[{{.window}}]))` : `sum(rate(http_requests_total{job="${appName || 'my-app'}",code=~"5.."}[{{.window}}]))`}
                         value={errorQuery}
                         onChange={(e) => setErrorQuery(e.target.value)}
                         minRows={3}
@@ -543,8 +572,8 @@ slos:
 
                       <Textarea
                         label="Total Query"
-                        description="PromQL query for total events. Use {{.window}} as placeholder for time window (Sloth format). Defaults to all HTTP requests if left empty."
-                        placeholder={`sum(rate(http_requests_total{job="${appName || 'my-app'}",namespace="${namespace || 'production'}"}[{{.window}}]))`}
+                        description="PromQL query for total events. Use {{.window}} as placeholder for time window (Sloth format). Uses Application Name as job label. Defaults to all HTTP requests if left empty."
+                        placeholder={namespace ? `sum(rate(http_requests_total{job="${appName || 'my-app'}",namespace="${namespace}"}[{{.window}}]))` : `sum(rate(http_requests_total{job="${appName || 'my-app'}"}[{{.window}}]))`}
                         value={totalQuery}
                         onChange={(e) => setTotalQuery(e.target.value)}
                         minRows={3}
@@ -625,30 +654,47 @@ slos:
                 <Accordion.Item value="alerts">
                   <Accordion.Control icon={<IconBell size={20} />}>Alert Settings</Accordion.Control>
                   <Accordion.Panel>
-                    <Select
-                      label="Evaluation Interval"
-                      description="How often Prometheus evaluates these rules"
-                      value={evaluationInterval}
-                      onChange={setEvaluationInterval}
-                      data={[
-                        { value: '30s', label: '30 seconds' },
-                        { value: '1m', label: '1 minute' },
-                        { value: '2m', label: '2 minutes' },
-                        { value: '5m', label: '5 minutes' },
-                      ]}
-                      size="md"
-                      styles={{
-                        label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 }
-                      }}
-                    />
+                    <Stack spacing="md">
+                      <Select
+                        label="Evaluation Interval"
+                        description="How often Prometheus evaluates these rules"
+                        value={evaluationInterval}
+                        onChange={setEvaluationInterval}
+                        data={[
+                          { value: '30s', label: '30 seconds' },
+                          { value: '1m', label: '1 minute' },
+                          { value: '2m', label: '2 minutes' },
+                          { value: '5m', label: '5 minutes' },
+                        ]}
+                        size="md"
+                        styles={{
+                          label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 }
+                        }}
+                      />
+
+                      <Textarea
+                        label="Additional Alert Labels (Optional)"
+                        description="Custom labels to add to all alerts. Perfect for routing labels (team, squad), documentation links (runbook_url), or any metadata needed for alert management. Format: one per line as key: value"
+                        placeholder="team: sre&#10;priority: high&#10;runbook_url: https://wiki.example.com/runbooks"
+                        value={customAlertLabels}
+                        onChange={(e) => setCustomAlertLabels(e.target.value)}
+                        minRows={3}
+                        autosize
+                        size="md"
+                        styles={{
+                          label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 },
+                          input: { fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.9rem' }
+                        }}
+                      />
+                    </Stack>
                   </Accordion.Panel>
                 </Accordion.Item>
               </Accordion>
 
-              <Button 
-                onClick={generateRules} 
+              <Button
+                onClick={generateRules}
                 size="lg"
-                disabled={!appName || !namespace}
+                disabled={!appName}
                 fullWidth
                 style={{
                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
