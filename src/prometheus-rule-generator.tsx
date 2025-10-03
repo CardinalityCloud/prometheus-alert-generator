@@ -59,9 +59,8 @@ export default function PrometheusRuleGenerator() {
   const [livenessQuery, setLivenessQuery] = useState('');
   const [livenessAvailabilityThreshold, setLivenessAvailabilityThreshold] = useState(80);
   const [errorBudgetWindow, setErrorBudgetWindow] = useState('30d');
-  const [sliType, setSliType] = useState('availability');
-  const [customErrorQuery, setCustomErrorQuery] = useState('');
-  const [customTotalQuery, setCustomTotalQuery] = useState('');
+  const [errorQuery, setErrorQuery] = useState('');
+  const [totalQuery, setTotalQuery] = useState('');
   const [generatedPrometheus, setGeneratedPrometheus] = useState('');
   const [generatedSloth, setGeneratedSloth] = useState('');
   const [uploadError, setUploadError] = useState('');
@@ -98,47 +97,22 @@ export default function PrometheusRuleGenerator() {
     const effectiveLivenessQuery = livenessQuery || `up{job="${appName}", namespace="${namespace}"}`;
     const availabilityThresholdDecimal = livenessAvailabilityThreshold / 100;
 
-    // Determine error and total queries based on SLI type
-    let errorQuery5m, totalQuery5m, errorQuery1h, totalQuery1h, errorQuery6h, totalQuery6h, errorQueryWindow, totalQueryWindow;
-    let sliName = '';
-    let sliDescription = '';
+    // Use default availability queries if user hasn't provided custom ones
+    const defaultErrorQuery = `sum(rate(http_requests_total{job="${appName}",namespace="${namespace}",code=~"5.."}[{{.window}}]))`;
+    const defaultTotalQuery = `sum(rate(http_requests_total{job="${appName}",namespace="${namespace}"}[{{.window}}]))`;
 
-    if (sliType === 'availability') {
-      sliName = 'availability';
-      sliDescription = 'HTTP request success rate';
-      errorQuery5m = `sum(rate(http_requests_total{job="${appName}", namespace="${namespace}", code=~"5.."}[5m]))`;
-      totalQuery5m = `sum(rate(http_requests_total{job="${appName}", namespace="${namespace}"}[5m]))`;
-      errorQuery1h = `sum(rate(http_requests_total{job="${appName}", namespace="${namespace}", code=~"5.."}[1h]))`;
-      totalQuery1h = `sum(rate(http_requests_total{job="${appName}", namespace="${namespace}"}[1h]))`;
-      errorQuery6h = `sum(rate(http_requests_total{job="${appName}", namespace="${namespace}", code=~"5.."}[6h]))`;
-      totalQuery6h = `sum(rate(http_requests_total{job="${appName}", namespace="${namespace}"}[6h]))`;
-      errorQueryWindow = `sum(rate(http_requests_total{job="${appName}",namespace="${namespace}",code=~"5.."}[{{.window}}]))`;
-      totalQueryWindow = `sum(rate(http_requests_total{job="${appName}",namespace="${namespace}"}[{{.window}}]))`;
-    } else if (sliType === 'latency') {
-      sliName = 'latency';
-      sliDescription = 'requests completing under 1 second';
-      // For latency, "errors" are slow requests (> threshold)
-      errorQuery5m = `sum(rate(http_request_duration_seconds_count{job="${appName}", namespace="${namespace}"}[5m])) - sum(rate(http_request_duration_seconds_bucket{job="${appName}", namespace="${namespace}", le="1"}[5m]))`;
-      totalQuery5m = `sum(rate(http_request_duration_seconds_count{job="${appName}", namespace="${namespace}"}[5m]))`;
-      errorQuery1h = `sum(rate(http_request_duration_seconds_count{job="${appName}", namespace="${namespace}"}[1h])) - sum(rate(http_request_duration_seconds_bucket{job="${appName}", namespace="${namespace}", le="1"}[1h]))`;
-      totalQuery1h = `sum(rate(http_request_duration_seconds_count{job="${appName}", namespace="${namespace}"}[1h]))`;
-      errorQuery6h = `sum(rate(http_request_duration_seconds_count{job="${appName}", namespace="${namespace}"}[6h])) - sum(rate(http_request_duration_seconds_bucket{job="${appName}", namespace="${namespace}", le="1"}[6h]))`;
-      totalQuery6h = `sum(rate(http_request_duration_seconds_count{job="${appName}", namespace="${namespace}"}[6h]))`;
-      errorQueryWindow = `sum(rate(http_request_duration_seconds_count{job="${appName}",namespace="${namespace}"}[{{.window}}])) - sum(rate(http_request_duration_seconds_bucket{job="${appName}",namespace="${namespace}",le="1"}[{{.window}}]))`;
-      totalQueryWindow = `sum(rate(http_request_duration_seconds_count{job="${appName}",namespace="${namespace}"}[{{.window}}]))`;
-    } else if (sliType === 'custom') {
-      sliName = 'custom';
-      sliDescription = 'custom SLI queries';
-      // Replace {{.window}} with actual time windows for Prometheus rules
-      errorQuery5m = customErrorQuery.replace(/\{\{\.window\}\}/g, '5m');
-      totalQuery5m = customTotalQuery.replace(/\{\{\.window\}\}/g, '5m');
-      errorQuery1h = customErrorQuery.replace(/\{\{\.window\}\}/g, '1h');
-      totalQuery1h = customTotalQuery.replace(/\{\{\.window\}\}/g, '1h');
-      errorQuery6h = customErrorQuery.replace(/\{\{\.window\}\}/g, '6h');
-      totalQuery6h = customTotalQuery.replace(/\{\{\.window\}\}/g, '6h');
-      errorQueryWindow = customErrorQuery;
-      totalQueryWindow = customTotalQuery;
-    }
+    const effectiveErrorQuery = errorQuery || defaultErrorQuery;
+    const effectiveTotalQuery = totalQuery || defaultTotalQuery;
+
+    // Replace {{.window}} with actual time windows for Prometheus rules
+    const errorQuery5m = effectiveErrorQuery.replace(/\{\{\.window\}\}/g, '5m');
+    const totalQuery5m = effectiveTotalQuery.replace(/\{\{\.window\}\}/g, '5m');
+    const errorQuery1h = effectiveErrorQuery.replace(/\{\{\.window\}\}/g, '1h');
+    const totalQuery1h = effectiveTotalQuery.replace(/\{\{\.window\}\}/g, '1h');
+    const errorQuery6h = effectiveErrorQuery.replace(/\{\{\.window\}\}/g, '6h');
+    const totalQuery6h = effectiveTotalQuery.replace(/\{\{\.window\}\}/g, '6h');
+    const errorQueryWindow = effectiveErrorQuery;
+    const totalQueryWindow = effectiveTotalQuery;
 
     // Generate Prometheus Rules - Always include liveness alert
     let prometheusYaml = `groups:
@@ -164,8 +138,8 @@ export default function PrometheusRuleGenerator() {
 
       prometheusYaml += `
 
-      # SLO: ${sliName.charAt(0).toUpperCase() + sliName.slice(1)}
-      - record: ${appName}:${sliName}:ratio_rate5m
+      # SLO Recording Rule
+      - record: ${appName}:slo:ratio_rate5m
         expr: |
           (${successQuery5m})
           /
@@ -174,7 +148,7 @@ export default function PrometheusRuleGenerator() {
       - alert: ${appName}SLOBreach
         expr: |
           (
-            1 - ${appName}:${sliName}:ratio_rate5m
+            1 - ${appName}:slo:ratio_rate5m
           ) * 100 > ${errorBudget}
         for: 5m
         labels:
@@ -182,8 +156,8 @@ export default function PrometheusRuleGenerator() {
           component: ${appName}
           alert_type: slo_breach
         annotations:
-          summary: "${appName} ${sliName} SLO breach"
-          description: "Error rate for ${appName} ${sliName} SLI is {{ $value | humanizePercentage }}, exceeding the error budget of ${errorBudget}% (SLO target: ${sloTarget}%)."
+          summary: "${appName} SLO breach"
+          description: "Error rate for ${appName} is {{ $value | humanizePercentage }}, exceeding the error budget of ${errorBudget}% (SLO target: ${sloTarget}%)."
 
       # SLO: Error Budget Burn Rate (Fast Burn - 1h window)
       - alert: ${appName}ErrorBudgetFastBurn
@@ -243,20 +217,20 @@ labels:
   repo: "${appName}"
   tier: "1"
 slos:
-  - name: "${appName}-${sliName}"
+  - name: "${appName}-slo"
     objective: ${sloTarget}
-    description: "${sliDescription} SLO for ${appName}"
+    description: "SLO for ${appName}"
     sli:
       events:
         error_query: ${errorQueryWindow}
         total_query: ${totalQueryWindow}
     alerting:
-      name: ${appName}${sliName.charAt(0).toUpperCase() + sliName.slice(1)}Alert
+      name: ${appName}SLOAlert
       labels:
         component: "${appName}"
         namespace: "${namespace}"
       annotations:
-        summary: "SLO breach for ${appName} ${sliName}"
+        summary: "SLO breach for ${appName}"
         description: "Error budget is being consumed too fast for ${appName} in ${namespace}"
       page_alert:
         labels:
@@ -551,56 +525,37 @@ slos:
                         }}
                       />
 
-                      <Select
-                        label="SLI Type"
-                        description="Choose the type of Service Level Indicator to measure"
-                        value={sliType}
-                        onChange={setSliType}
-                        data={[
-                          { value: 'availability', label: 'Availability (HTTP request success rate)' },
-                          { value: 'latency', label: 'Latency (requests under threshold)' },
-                          { value: 'custom', label: 'Custom (define your own queries)' },
-                        ]}
+                      <Textarea
+                        label="Error Query"
+                        description="PromQL query for 'bad' events. Use {{.window}} as placeholder for time window (Sloth format). Defaults to HTTP 5xx errors if left empty."
+                        placeholder={`sum(rate(http_requests_total{job="${appName || 'my-app'}",namespace="${namespace || 'production'}",code=~"5.."}[{{.window}}]))`}
+                        value={errorQuery}
+                        onChange={(e) => setErrorQuery(e.target.value)}
+                        minRows={3}
+                        autosize
                         size="md"
                         disabled={!sloEnabled}
                         styles={{
-                          label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 }
+                          label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 },
+                          input: { fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.9rem' }
                         }}
                       />
 
-                      {sloEnabled && sliType === 'custom' && (
-                        <>
-                          <Textarea
-                            label="Error Query"
-                            description="PromQL query for 'bad' events. Use {{.window}} as placeholder for time window (Sloth format). Example: sum(rate(http_requests_total{job='my-app',code=~'5..'}[{{.window}}]))"
-                            placeholder="sum(rate(http_requests_total{job='my-app',code=~'5..'}[{{.window}}]))"
-                            value={customErrorQuery}
-                            onChange={(e) => setCustomErrorQuery(e.target.value)}
-                            minRows={3}
-                            autosize
-                            size="md"
-                            styles={{
-                              label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 },
-                              input: { fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.9rem' }
-                            }}
-                          />
-
-                          <Textarea
-                            label="Total Query"
-                            description="PromQL query for total events. Use {{.window}} as placeholder for time window (Sloth format). Example: sum(rate(http_requests_total{job='my-app'}[{{.window}}]))"
-                            placeholder="sum(rate(http_requests_total{job='my-app'}[{{.window}}]))"
-                            value={customTotalQuery}
-                            onChange={(e) => setCustomTotalQuery(e.target.value)}
-                            minRows={3}
-                            autosize
-                            size="md"
-                            styles={{
-                              label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 },
-                              input: { fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.9rem' }
-                            }}
-                          />
-                        </>
-                      )}
+                      <Textarea
+                        label="Total Query"
+                        description="PromQL query for total events. Use {{.window}} as placeholder for time window (Sloth format). Defaults to all HTTP requests if left empty."
+                        placeholder={`sum(rate(http_requests_total{job="${appName || 'my-app'}",namespace="${namespace || 'production'}"}[{{.window}}]))`}
+                        value={totalQuery}
+                        onChange={(e) => setTotalQuery(e.target.value)}
+                        minRows={3}
+                        autosize
+                        size="md"
+                        disabled={!sloEnabled}
+                        styles={{
+                          label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 },
+                          input: { fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.9rem' }
+                        }}
+                      />
 
                       <Select
                         label="SLO Target"
