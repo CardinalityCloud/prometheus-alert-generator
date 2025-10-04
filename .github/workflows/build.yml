@@ -8,6 +8,25 @@ on:
     branches:
       - main
 
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+# Default to bash
+defaults:
+  run:
+    shell: bash
+
+env:
+  # What region to make AWS API calls against
+  AWS_REGION: us-east-2
+
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,3 +46,16 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::084375584595:role/github_oidc_role
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ env.AWS_REGION }}
+          retry-max-attempts: 3
+
+      - name: Deploy
+        run: |
+          aws s3 sync dist/ s3://prometheus-alert-generator.com/ --delete && aws cloudfront create-invalidation --distribution-id E3VJ8C2CAPI7H --paths "/*"
+
