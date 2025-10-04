@@ -896,7 +896,6 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
               marginTop: '3rem',
             }}
           >
-            <Divider mb="lg" />
 
             {/* Copyright */}
             <Text size="sm" c="dimmed" style={{ textAlign: 'center', marginBottom: '1rem' }}>

@@ -7,6 +7,29 @@ export interface FaqItem {
 
 export const faqItems: FaqItem[] = [
   {
+    id: 'what-is-slo',
+    question: 'What is an SLO and why should I use SLO-based alerts?',
+    icon: 'help',
+    answer: `An SLO (Service Level Objective) is a target reliability goal for your service, expressed as a percentage (e.g., 99.9% uptime). SLOs define the level of reliability your users can expect and help you balance reliability with development velocity.
+
+SLO-based alerting has several advantages over traditional threshold-based alerting:
+
+- **User-centric**: Focuses on user-facing reliability rather than arbitrary infrastructure thresholds
+- **Context-aware**: Uses multi-window burn rate detection to alert on issues at the right time and severity
+- **Reduces noise**: Only alerts when error budget is meaningfully at risk, dramatically reducing alert fatigue
+- **Business alignment**: Helps balance reliability investments with feature development velocity
+- **Early warning system**: Detects problems before you exhaust your error budget
+
+**Learn More:**
+
+The foundational concepts are covered in the Google SRE books:
+- [Service Level Objectives (SRE Book Chapter 4)](https://sre.google/sre-book/service-level-objectives/)
+- [Implementing SLOs (SRE Workbook Chapter 2)](https://sre.google/workbook/implementing-slos/)
+- [Alerting on SLOs (SRE Workbook Chapter 5)](https://sre.google/workbook/alerting-on-slos/)
+
+For a comprehensive practical guide, see Alex Hidalgo's [Implementing Service Level Objectives](https://www.oreilly.com/library/view/implementing-service-level/9781492076803/) (O'Reilly, 2020), which provides detailed strategies for defining, measuring, and alerting on SLOs in real-world environments.`,
+  },
+  {
     id: 'contribute',
     question: 'How do I contribute to this project?',
     icon: 'github',
@@ -45,18 +68,5 @@ To report a bug or request a feature:
 - For general feedback about this tool, use the feedback email above
 
 We'd love to hear your thoughts on how we can improve this tool!`,
-  },
-  {
-    id: 'what-is-slo',
-    question: 'What is an SLO and why should I use SLO-based alerts?',
-    icon: 'help',
-    answer: `An SLO (Service Level Objective) is a target reliability goal for your service, expressed as a percentage (e.g., 99.9% uptime).
-
-SLO-based alerting has several advantages:
-
-- Focuses on user-facing reliability rather than arbitrary thresholds
-- Uses multi-window burn rate detection to alert on issues at the right time
-- Reduces alert fatigue by only notifying when error budget is at risk
-- Helps balance reliability with development velocity`,
   },
 ];
