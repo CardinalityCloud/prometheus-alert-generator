@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { MantineProvider, Container, Title, TextInput, Textarea, NumberInput, Select, Slider, Switch, Button, Paper, Code, Stack, Group, Text, Divider, Tabs, FileButton, Alert, Accordion, Badge, createTheme } from '@mantine/core';
-import { IconClipboardList, IconUpload, IconTarget, IconHeartbeat, IconBell, IconCopy, IconDownload } from '@tabler/icons-react';
+import { MantineProvider, Container, Title, TextInput, Textarea, NumberInput, Select, Slider, Switch, Button, Paper, Code, Stack, Group, Text, Divider, Tabs, FileButton, Alert, Accordion, Badge, Anchor, createTheme } from '@mantine/core';
+import { useForm } from '@mantine/form';
+import { IconClipboardList, IconUpload, IconTarget, IconHeartbeat, IconBell, IconCopy, IconDownload, IconBrandGithub, IconBug, IconMail, IconExternalLink, IconQuestionMark } from '@tabler/icons-react';
+import { Link } from 'react-router-dom';
 import * as yaml from 'js-yaml';
 
 const theme = createTheme({
@@ -50,20 +52,67 @@ const theme = createTheme({
 });
 
 export default function PrometheusRuleGenerator() {
-  const [appName, setAppName] = useState('');
-  const [sloEnabled, setSloEnabled] = useState(true);
-  const [sloTarget, setSloTarget] = useState(99.9);
-  const [evaluationInterval, setEvaluationInterval] = useState('1m');
-  const [livenessThreshold, setLivenessThreshold] = useState(5);
-  const [livenessQuery, setLivenessQuery] = useState('');
-  const [livenessAvailabilityThreshold, setLivenessAvailabilityThreshold] = useState(80);
-  const [errorBudgetWindow, setErrorBudgetWindow] = useState('30d');
-  const [errorQuery, setErrorQuery] = useState('');
-  const [totalQuery, setTotalQuery] = useState('');
-  const [customAlertLabels, setCustomAlertLabels] = useState('');
   const [generatedPrometheus, setGeneratedPrometheus] = useState('');
-  const [generatedSloth, setGeneratedSloth] = useState('');
+  const [generatedConfig, setGeneratedConfig] = useState('');
   const [uploadError, setUploadError] = useState('');
+
+  // Validation function for PromQL metric patterns
+  const validatePromQLMetric = (value: string): string | null => {
+    if (!value || !value.trim()) {
+      return null; // Empty is allowed (will use default)
+    }
+
+    const query = value.trim();
+
+    // Basic pattern: metric_name followed by optional {labels}
+    // Metric name: [a-zA-Z_:][a-zA-Z0-9_:]*
+    const metricPattern = /^[a-zA-Z_:][a-zA-Z0-9_:]*(\{[^}]+\})?$/;
+
+    if (!metricPattern.test(query)) {
+      return 'Invalid metric format. Expected: metric_name{label="value"} or just metric_name';
+    }
+
+    // If it has labels, validate the label syntax
+    const labelsMatch = query.match(/\{([^}]+)\}/);
+    if (labelsMatch) {
+      const labelsString = labelsMatch[1];
+      const labelPairs = labelsString.split(',').map(s => s.trim());
+
+      for (const pair of labelPairs) {
+        // Label pattern: label_name="value" or label_name=~"regex" or label_name!="value" or label_name!~"regex"
+        const labelPattern = /^[a-zA-Z_][a-zA-Z0-9_]*\s*(=~?|!=~?)\s*"[^"]*"$/;
+        if (!labelPattern.test(pair.trim())) {
+          return `Invalid label syntax: "${pair}". Expected: label="value" or label=~"pattern"`;
+        }
+      }
+    }
+
+    return null; // Valid
+  };
+
+  // Form with validation
+  const form = useForm({
+    initialValues: {
+      appName: '',
+      sloEnabled: true,
+      sloTarget: 99.9,
+      evaluationInterval: '1m',
+      livenessThreshold: 5,
+      livenessQuery: '',
+      livenessAvailabilityThreshold: 80,
+      errorBudgetWindow: '30d',
+      errorQuery: '',
+      totalQuery: '',
+      customAlertLabels: '',
+      customAlertAnnotations: '',
+    },
+    validate: {
+      appName: (value: string) => (!value.trim() ? 'Application name is required' : null),
+      livenessQuery: validatePromQLMetric,
+      errorQuery: validatePromQLMetric,
+      totalQuery: validatePromQLMetric,
+    },
+  });
 
   // Calculate allowed downtime based on SLO target
   const calculateDowntime = (sloPercent: number) => {
@@ -93,14 +142,23 @@ export default function PrometheusRuleGenerator() {
   };
 
   const generateRules = () => {
+    // Validate form before generating
+    if (!form.isValid()) {
+      form.validate();
+      return;
+    }
+
+    const { appName, sloEnabled, sloTarget, evaluationInterval, livenessThreshold, livenessQuery,
+            livenessAvailabilityThreshold, errorBudgetWindow, errorQuery, totalQuery, customAlertLabels, customAlertAnnotations } = form.values;
+
     const errorBudget = 100 - sloTarget;
 
-    // Parse custom alert labels
-    const parseCustomLabels = (labelsText: string): string => {
-      if (!labelsText.trim()) return '';
+    // Parse custom alert labels and annotations
+    const parseCustomFields = (fieldsText: string): string => {
+      if (!fieldsText.trim()) return '';
 
-      const lines = labelsText.split('\n').filter(line => line.trim());
-      const labelLines = lines
+      const lines = fieldsText.split('\n').filter(line => line.trim());
+      const fieldLines = lines
         .map(line => {
           const [key, ...valueParts] = line.split(':');
           if (key && valueParts.length > 0) {
@@ -111,10 +169,11 @@ export default function PrometheusRuleGenerator() {
         })
         .filter(Boolean);
 
-      return labelLines.length > 0 ? '\n' + labelLines.join('\n') : '';
+      return fieldLines.length > 0 ? '\n' + fieldLines.join('\n') : '';
     };
 
-    const customLabelsFormatted = parseCustomLabels(customAlertLabels);
+    const customLabelsFormatted = parseCustomFields(customAlertLabels);
+    const customAnnotationsFormatted = parseCustomFields(customAlertAnnotations);
 
     const defaultLivenessQuery = `up{job="${appName}"}`;
     const effectiveLivenessQuery = livenessQuery || defaultLivenessQuery;
@@ -135,9 +194,8 @@ export default function PrometheusRuleGenerator() {
     const errorQuery6h = `sum(rate(${effectiveErrorMetric}[6h]))`;
     const totalQuery6h = `sum(rate(${effectiveTotalMetric}[6h]))`;
 
-    // For Sloth, use {{.window}} placeholder
-    const errorQueryWindow = `sum(rate(${effectiveErrorMetric}[{{.window}}]))`;
-    const totalQueryWindow = `sum(rate(${effectiveTotalMetric}[{{.window}}]))`;
+    const errorBudgetQuery = `sum(increase(${effectiveErrorMetric}[${errorBudgetWindow}]))`;
+    const totalBudgetQuery = `sum(increase(${effectiveTotalMetric}[${errorBudgetWindow}]))`;
 
     // Generate Prometheus Rules - Always include liveness alert
     let prometheusYaml = `groups:
@@ -155,7 +213,7 @@ export default function PrometheusRuleGenerator() {
           alert_type: liveness${customLabelsFormatted}
         annotations:
           summary: "${appName} availability below ${livenessAvailabilityThreshold}%"
-          description: "Less than ${livenessAvailabilityThreshold}% of ${appName} instances are up. Current availability: {{ $value | humanizePercentage }}"`;
+          description: "Less than ${livenessAvailabilityThreshold}% of ${appName} instances are up. Current availability: {{ $value | humanizePercentage }}"${customAnnotationsFormatted}`;
 
     // Add SLO rules only if enabled
     if (sloEnabled) {
@@ -182,7 +240,7 @@ export default function PrometheusRuleGenerator() {
           alert_type: slo_breach${customLabelsFormatted}
         annotations:
           summary: "${appName} SLO breach"
-          description: "Error rate for ${appName} is {{ $value | humanizePercentage }}, exceeding the error budget of ${errorBudget}% (SLO target: ${sloTarget}%)."
+          description: "Error rate for ${appName} is {{ $value | humanizePercentage }}, exceeding the error budget of ${errorBudget}% (SLO target: ${sloTarget}%)."${customAnnotationsFormatted}
 
       # SLO: Error Budget Burn Rate (Fast Burn - 1h window)
       - alert: ${appName}ErrorBudgetFastBurn
@@ -200,7 +258,7 @@ export default function PrometheusRuleGenerator() {
           burn_rate: fast${customLabelsFormatted}
         annotations:
           summary: "${appName} is burning error budget rapidly"
-          description: "Fast burn rate detected. At this rate, the entire ${errorBudgetWindow} error budget will be exhausted in ~2 days. Current error rate: {{ $value | humanizePercentage }}."
+          description: "Fast burn rate detected. At this rate, the entire ${errorBudgetWindow} error budget will be exhausted in ~2 days. Current error rate: {{ $value | humanizePercentage }}."${customAnnotationsFormatted}
 
       # SLO: Error Budget Burn Rate (Slow Burn - 6h window)
       - alert: ${appName}ErrorBudgetSlowBurn
@@ -218,106 +276,88 @@ export default function PrometheusRuleGenerator() {
           burn_rate: slow${customLabelsFormatted}
         annotations:
           summary: "${appName} is burning error budget steadily"
-          description: "Slow burn rate detected. At this rate, the entire ${errorBudgetWindow} error budget will be exhausted in ~5 days. Current error rate: {{ $value | humanizePercentage }}."
+          description: "Slow burn rate detected. At this rate, the entire ${errorBudgetWindow} error budget will be exhausted in ~5 days. Current error rate: {{ $value | humanizePercentage }}."${customAnnotationsFormatted}
 
       # Error Budget Remaining (Recording Rule)
       - record: ${appName}:error_budget:remaining_ratio_${errorBudgetWindow}
         expr: |
           1 - (
             (
-              sum(increase(http_requests_total{job="${appName}", code=~"5.."}[${errorBudgetWindow}]))
+              ${errorBudgetQuery}
               /
-              sum(increase(http_requests_total{job="${appName}"}[${errorBudgetWindow}]))
+              ${totalBudgetQuery}
             ) / ${errorBudget / 100}
           )`;
     }
 
-    // Generate Sloth SLO Spec (only if SLO is enabled)
-    let slothYaml = '';
-    if (sloEnabled) {
-      slothYaml = `version: "prometheus/v1"
-service: "${appName}"
-labels:
-  owner: "platform-team"
-  repo: "${appName}"
-  tier: "1"
-slos:
-  - name: "${appName}-slo"
-    objective: ${sloTarget}
-    description: "SLO for ${appName}"
-    sli:
-      events:
-        error_query: ${errorQueryWindow}
-        total_query: ${totalQueryWindow}
-    alerting:
-      name: ${appName}SLOAlert
-      labels:
-        component: "${appName}"
-      annotations:
-        summary: "SLO breach for ${appName}"
-        description: "Error budget is being consumed too fast for ${appName}"
-      page_alert:
-        labels:
-          severity: critical
-          alert_type: page
-      ticket_alert:
-        labels:
-          severity: warning
-          alert_type: ticket`;
-    }
+    // Generate configuration spec for saving/resuming work
+    // Use effective values (with defaults applied) so config captures actual state
+    const configYaml = `# Prometheus Alert Rule Generator Configuration
+# Save this file to resume your work later
+version: "1.0"
+application:
+  name: "${appName}"
+
+liveness:
+  query: "${effectiveLivenessQuery}"
+  availability_threshold: ${livenessAvailabilityThreshold}
+  alert_duration_minutes: ${livenessThreshold}
+
+# SLOs is an array to support multiple SLOs in the future
+slos:${sloEnabled ? `
+  - enabled: true
+    target: ${sloTarget}
+    error_metric: "${effectiveErrorMetric}"
+    total_metric: "${effectiveTotalMetric}"
+    error_budget_window: "${errorBudgetWindow}"` : ' []'}
+
+alerts:
+  evaluation_interval: "${evaluationInterval}"${customAlertLabels ? `
+  custom_labels: |
+${customAlertLabels.split('\n').map((line: string) => `    ${line}`).join('\n')}` : ''}${customAlertAnnotations ? `
+  custom_annotations: |
+${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('\n')}` : ''}`;
 
     setGeneratedPrometheus(prometheusYaml);
-    setGeneratedSloth(slothYaml);
+    setGeneratedConfig(configYaml);
   };
 
-  const handleSlothUpload = async (file) => {
+  const handleConfigUpload = async (file: File | null) => {
     if (!file) return;
 
     try {
       const text = await file.text();
       const parsed = yaml.load(text);
 
-      // Extract values from Sloth spec
-      if (parsed.service) {
-        setAppName(parsed.service);
-      }
+      // Extract values from config spec and update form
+      const config = parsed as any;
+      const firstSlo = config.slos?.[0];
 
-      if (parsed.slos && parsed.slos.length > 0) {
-        const firstSlo = parsed.slos[0];
-
-        if (firstSlo.objective) {
-          setSloTarget(firstSlo.objective);
-        }
-
-        // Try to extract job name from error query
-        const errorQueryStr = firstSlo.sli?.events?.error_query || '';
-        const jobMatch = errorQueryStr.match(/job="([^"]+)"/);
-        if (jobMatch && !parsed.service) {
-          setAppName(jobMatch[1]);
-        }
-      }
-
-      // Try to extract liveness query from alerting rules if present
-      // Look for common patterns in the parsed YAML
-      if (parsed.alerting?.liveness_query) {
-        setLivenessQuery(parsed.alerting.liveness_query);
-      }
-
-      // Try to extract availability threshold if present
-      if (parsed.alerting?.availability_threshold) {
-        setLivenessAvailabilityThreshold(parsed.alerting.availability_threshold);
-      }
+      form.setValues({
+        appName: config.application?.name || form.values.appName,
+        livenessQuery: config.liveness?.query || form.values.livenessQuery,
+        livenessAvailabilityThreshold: config.liveness?.availability_threshold ?? form.values.livenessAvailabilityThreshold,
+        livenessThreshold: config.liveness?.alert_duration_minutes ?? form.values.livenessThreshold,
+        sloEnabled: (config.slos && config.slos.length > 0 && firstSlo?.enabled) ?? form.values.sloEnabled,
+        sloTarget: firstSlo?.target ?? form.values.sloTarget,
+        errorQuery: firstSlo?.error_metric || form.values.errorQuery,
+        totalQuery: firstSlo?.total_metric || form.values.totalQuery,
+        errorBudgetWindow: firstSlo?.error_budget_window || form.values.errorBudgetWindow,
+        evaluationInterval: config.alerts?.evaluation_interval || form.values.evaluationInterval,
+        customAlertLabels: config.alerts?.custom_labels?.trim() || form.values.customAlertLabels,
+        customAlertAnnotations: config.alerts?.custom_annotations?.trim() || form.values.customAlertAnnotations,
+      });
 
       setUploadError('');
       // Auto-generate rules with loaded values
       setTimeout(generateRules, 100);
 
-    } catch (error) {
-      setUploadError(`Failed to parse Sloth YAML: ${error.message}`);
+    } catch (error: any) {
+      setUploadError(`Failed to parse configuration YAML: ${error.message}`);
     }
   };
 
-  const downloadFile = (content, filename) => {
+  const downloadFile = (content: string, filename: string) => {
     const blob = new Blob([content], { type: 'text/yaml' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -348,8 +388,8 @@ slos:
               }}
             >
               <div style={{ textAlign: 'center' }}>
-                <Title 
-                  order={1} 
+                <Title
+                  order={1}
                   mb="xs"
                   style={{
                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -362,7 +402,12 @@ slos:
                   Free Prometheus Alert Rule Generator
                 </Title>
                 <Text c="dimmed" size="lg">Generate Prometheus alerting rules and SLOs for comprehensive monitoring.</Text>
-                <Text size="sm" c="dimmed" mt="xs" style={{ fontWeight: 500 }}>
+                <Group justify="center" mt="md" mb="xs">
+                  <Button component={Link} to="/faq" variant="light" leftSection={<IconQuestionMark size={18} />}>
+                    FAQ
+                  </Button>
+                </Group>
+                <Text size="sm" c="dimmed" style={{ fontWeight: 500 }}>
                   Brought to you by <a href="https://cardinality.cloud/" target="_blank" rel="noopener noreferrer" style={{ color: '#667eea', textDecoration: 'none', fontWeight: 600 }}>Cardinality Cloud, LLC</a>.
                 </Text>
               </div>
@@ -396,8 +441,8 @@ slos:
                   <Title order={2} mb="xs" style={{ fontSize: '1.75rem' }}>Configuration</Title>
                   <Text size="sm" c="dimmed">Configure your application monitoring and SLO parameters</Text>
                 </div>
-                <FileButton onChange={handleSlothUpload} accept=".yaml,.yml">
-                  {(props) => <Button {...props} variant="light" size="md" leftSection={<IconUpload size={18} />}>Upload Sloth Spec</Button>}
+                <FileButton onChange={handleConfigUpload} accept=".yaml,.yml">
+                  {(props) => <Button {...props} variant="light" size="md" leftSection={<IconUpload size={18} />}>Upload Config</Button>}
                 </FileButton>
               </Group>
 
@@ -420,13 +465,12 @@ slos:
                     label="Application Name / Job Name"
                     description="Used as the job label in queries and as the base name for all generated rules and alerts"
                     placeholder="my-api"
-                    value={appName}
-                    onChange={(e) => setAppName(e.target.value)}
                     required
                     size="md"
                     styles={{
                       label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 }
                     }}
+                    {...form.getInputProps('appName')}
                   />
                 </Stack>
               </Paper>
@@ -463,9 +507,7 @@ slos:
                       <Textarea
                         label="Liveness PromQL Query"
                         description="PromQL expression that returns 1 (up) or 0 (down) for each instance. Defaults to up{job='...'} using the Application Name above if left empty."
-                        placeholder={`up{job="${appName || 'my-app'}"}`}
-                        value={livenessQuery}
-                        onChange={(e) => setLivenessQuery(e.target.value)}
+                        placeholder={`up{job="${form.values.appName || 'my-app'}"}`}
                         minRows={3}
                         autosize
                         size="md"
@@ -473,19 +515,19 @@ slos:
                           label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 },
                           input: { fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.9rem' }
                         }}
+                        {...form.getInputProps('livenessQuery')}
                       />
 
                       <Paper p="md" withBorder style={{ backgroundColor: '#f1f3f5' }}>
                         <Stack spacing="sm">
                           <Text size="sm" fw={600}>
-                            Minimum Availability Threshold: {livenessAvailabilityThreshold}%
+                            Minimum Availability Threshold: {form.values.livenessAvailabilityThreshold}%
                           </Text>
                           <Text size="xs" c="dimmed">
                             Alert when less than this percentage of instances are up (based on avg of liveness query)
                           </Text>
                           <Slider
-                            value={livenessAvailabilityThreshold}
-                            onChange={setLivenessAvailabilityThreshold}
+                            {...form.getInputProps('livenessAvailabilityThreshold')}
                             min={0}
                             max={100}
                             step={5}
@@ -497,6 +539,7 @@ slos:
                             ]}
                             size="md"
                             mt="md"
+                            mb="lg"
                           />
                         </Stack>
                       </Paper>
@@ -504,14 +547,13 @@ slos:
                       <NumberInput
                         label="Liveness Alert Duration (minutes)"
                         description="How long availability must be below threshold before alerting"
-                        value={livenessThreshold}
-                        onChange={setLivenessThreshold}
                         min={1}
                         max={60}
                         size="md"
                         styles={{
                           label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 }
                         }}
+                        {...form.getInputProps('livenessThreshold')}
                       />
                     </Stack>
                   </Accordion.Panel>
@@ -522,53 +564,48 @@ slos:
                   <Accordion.Panel>
                     <Stack spacing="md">
                       <Switch
-                        label="Generate SLO-based alerts and Sloth spec"
-                        description="Enable to generate error budget burn rate alerts and Sloth specifications"
-                        checked={sloEnabled}
-                        onChange={(e) => setSloEnabled(e.currentTarget.checked)}
+                        label="Generate SLO-based alerts"
+                        description="Enable to generate error budget burn rate alerts"
                         size="md"
                         styles={{
                           label: { fontSize: '0.95rem', fontWeight: 600 }
                         }}
+                        {...form.getInputProps('sloEnabled', { type: 'checkbox' })}
                       />
 
                       <Textarea
                         label="Error Metric (Counter)"
                         description="Raw Prometheus Counter metric for 'bad' events. Just provide the metric name and labels - we'll automatically wrap it with sum(rate()). Defaults to HTTP 5xx errors if left empty."
-                        placeholder={`http_requests_total{job="${appName || 'my-app'}",code=~"5.."}`}
-                        value={errorQuery}
-                        onChange={(e) => setErrorQuery(e.target.value)}
+                        placeholder={`http_requests_total{job="${form.values.appName || 'my-app'}",code=~"5.."}`}
                         minRows={2}
                         autosize
                         size="md"
-                        disabled={!sloEnabled}
+                        disabled={!form.values.sloEnabled}
                         styles={{
                           label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 },
                           input: { fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.9rem' }
                         }}
+                        {...form.getInputProps('errorQuery')}
                       />
 
                       <Textarea
                         label="Total Metric (Counter)"
                         description="Raw Prometheus Counter metric for total events. Just provide the metric name and labels - we'll automatically wrap it with sum(rate()). Defaults to all HTTP requests if left empty."
-                        placeholder={`http_requests_total{job="${appName || 'my-app'}"}`}
-                        value={totalQuery}
-                        onChange={(e) => setTotalQuery(e.target.value)}
+                        placeholder={`http_requests_total{job="${form.values.appName || 'my-app'}"}`}
                         minRows={2}
                         autosize
                         size="md"
-                        disabled={!sloEnabled}
+                        disabled={!form.values.sloEnabled}
                         styles={{
                           label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 },
                           input: { fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.9rem' }
                         }}
+                        {...form.getInputProps('totalQuery')}
                       />
 
                       <Select
                         label="SLO Target"
                         description="Target availability/reliability percentage based on industry-standard SLO tiers"
-                        value={sloTarget.toString()}
-                        onChange={(value) => setSloTarget(parseFloat(value))}
                         data={[
                           { value: '95', label: '95% (one nine)' },
                           { value: '99', label: '99% (two nines)' },
@@ -577,14 +614,16 @@ slos:
                           { value: '99.999', label: '99.999% (five nines)' },
                         ]}
                         size="md"
-                        disabled={!sloEnabled}
+                        disabled={!form.values.sloEnabled}
                         styles={{
                           label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 }
                         }}
+                        value={form.values.sloTarget.toString()}
+                        onChange={(value) => form.setFieldValue('sloTarget', parseFloat(value || '99.9'))}
                       />
 
-                      {sloEnabled && (() => {
-                        const downtime = calculateDowntime(sloTarget);
+                      {form.values.sloEnabled && (() => {
+                        const downtime = calculateDowntime(form.values.sloTarget);
                         return (
                           <Paper p="md" withBorder style={{ backgroundColor: '#e7f5ff', borderColor: '#339af0' }}>
                             <Group spacing="md" position="apart">
@@ -602,7 +641,7 @@ slos:
                                 </Group>
                               </div>
                               <Text size="xs" c="dimmed" style={{ maxWidth: '200px' }}>
-                                Maximum acceptable downtime for {sloTarget}% SLO target
+                                Maximum acceptable downtime for {form.values.sloTarget}% SLO target
                               </Text>
                             </Group>
                           </Paper>
@@ -612,18 +651,17 @@ slos:
                       <Select
                         label="Error Budget Window"
                         description="Time window for error budget calculations"
-                        value={errorBudgetWindow}
-                        onChange={setErrorBudgetWindow}
                         data={[
                           { value: '7d', label: '7 days' },
                           { value: '30d', label: '30 days' },
                           { value: '90d', label: '90 days' },
                         ]}
                         size="md"
-                        disabled={!sloEnabled}
+                        disabled={!form.values.sloEnabled}
                         styles={{
                           label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 }
                         }}
+                        {...form.getInputProps('errorBudgetWindow')}
                       />
                     </Stack>
                   </Accordion.Panel>
@@ -636,8 +674,6 @@ slos:
                       <Select
                         label="Evaluation Interval"
                         description="How often Prometheus evaluates these rules"
-                        value={evaluationInterval}
-                        onChange={setEvaluationInterval}
                         data={[
                           { value: '30s', label: '30 seconds' },
                           { value: '1m', label: '1 minute' },
@@ -648,14 +684,13 @@ slos:
                         styles={{
                           label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 }
                         }}
+                        {...form.getInputProps('evaluationInterval')}
                       />
 
                       <Textarea
                         label="Additional Alert Labels (Optional)"
-                        description="Custom labels to add to all alerts. Perfect for routing labels (team, squad), documentation links (runbook_url), or any metadata needed for alert management. Format: one per line as key: value"
-                        placeholder="team: sre&#10;priority: high&#10;runbook_url: https://wiki.example.com/runbooks"
-                        value={customAlertLabels}
-                        onChange={(e) => setCustomAlertLabels(e.target.value)}
+                        description="Custom labels to add to all alerts. Perfect for routing labels (team, squad), or any metadata needed for alert management. Format: one per line as key: value"
+                        placeholder="team: sre&#10;squad: platform&#10;priority: high"
                         minRows={3}
                         autosize
                         size="md"
@@ -663,6 +698,21 @@ slos:
                           label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 },
                           input: { fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.9rem' }
                         }}
+                        {...form.getInputProps('customAlertLabels')}
+                      />
+
+                      <Textarea
+                        label="Additional Alert Annotations (Optional)"
+                        description="Custom annotations to add to all alerts. Perfect for documentation links (runbook_url, dashboard), or contextual information. Format: one per line as key: value"
+                        placeholder="runbook_url: https://wiki.example.com/runbooks&#10;dashboard: https://grafana.example.com/d/app-overview"
+                        minRows={3}
+                        autosize
+                        size="md"
+                        styles={{
+                          label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 },
+                          input: { fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.9rem' }
+                        }}
+                        {...form.getInputProps('customAlertAnnotations')}
                       />
                     </Stack>
                   </Accordion.Panel>
@@ -672,7 +722,7 @@ slos:
               <Button
                 onClick={generateRules}
                 size="lg"
-                disabled={!appName}
+                disabled={!form.values.appName}
                 fullWidth
                 style={{
                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -714,7 +764,7 @@ slos:
               <Tabs defaultValue="prometheus">
                 <Tabs.List>
                   <Tabs.Tab value="prometheus">Prometheus Rules</Tabs.Tab>
-                  {sloEnabled && <Tabs.Tab value="sloth">Sloth SLO Spec</Tabs.Tab>}
+                  <Tabs.Tab value="config">Configuration</Tabs.Tab>
                 </Tabs.List>
 
                 <Tabs.Panel value="prometheus" pt="md">
@@ -731,16 +781,16 @@ slos:
                         </Button>
                         <Button
                           leftSection={<IconDownload size={18} />}
-                          onClick={() => downloadFile(generatedPrometheus, `${appName}-prometheus-rules.yaml`)}
+                          onClick={() => downloadFile(generatedPrometheus, `${form.values.appName}-prometheus-rules.yaml`)}
                         >
                           Download
                         </Button>
                       </Group>
                     </Group>
-                    
-                    <Code block style={{ 
-                      whiteSpace: 'pre', 
-                      overflow: 'auto', 
+
+                    <Code block style={{
+                      whiteSpace: 'pre',
+                      overflow: 'auto',
                       maxHeight: '600px',
                       background: '#f8f9fa',
                       border: '1px solid #e9ecef',
@@ -756,50 +806,45 @@ slos:
                   </Stack>
                 </Tabs.Panel>
 
-                {sloEnabled && (
-                  <Tabs.Panel value="sloth" pt="md">
+                <Tabs.Panel value="config" pt="md">
                   <Stack spacing="md">
                     <Group position="apart">
-                      <Title order={3}>Sloth SLO Spec</Title>
+                      <Title order={3}>Configuration</Title>
                       <Group>
                         <Button
                           variant="light"
                           leftSection={<IconCopy size={18} />}
-                          onClick={() => navigator.clipboard.writeText(generatedSloth)}
+                          onClick={() => navigator.clipboard.writeText(generatedConfig)}
                         >
                           Copy
                         </Button>
                         <Button
                           leftSection={<IconDownload size={18} />}
-                          onClick={() => downloadFile(generatedSloth, `${appName}-sloth-slo.yaml`)}
+                          onClick={() => downloadFile(generatedConfig, `${form.values.appName}-config.yaml`)}
                         >
                           Download
                         </Button>
                       </Group>
                     </Group>
-                    
-                    <Code block style={{ 
-                      whiteSpace: 'pre', 
-                      overflow: 'auto', 
+
+                    <Code block style={{
+                      whiteSpace: 'pre',
+                      overflow: 'auto',
                       maxHeight: '600px',
                       background: '#f8f9fa',
                       border: '1px solid #e9ecef',
                       borderRadius: '8px',
                     }}>
-                      {generatedSloth}
+                      {generatedConfig}
                     </Code>
 
-                    <Alert color="blue" title="Using the Sloth CLI">
+                    <Alert color="blue" title="Save and Resume">
                       <Text size="sm">
-                        Process this spec with the Sloth CLI to generate comprehensive multi-window, multi-burn-rate alerts:
+                        Download this configuration file to save your work. You can upload it later using the "Upload Config" button to resume where you left off.
                       </Text>
-                      <Code block mt="xs">
-                        sloth generate -i {appName}-sloth-slo.yaml -o {appName}-sloth-rules.yaml
-                      </Code>
                     </Alert>
                   </Stack>
                 </Tabs.Panel>
-                )}
               </Tabs>
 
               <Divider my="md" />
@@ -807,8 +852,8 @@ slos:
               <Text size="sm" c="dimmed">
                 <strong>Required Metrics:</strong>
                 <ul style={{ marginTop: '8px', marginBottom: '0' }}>
-                  <li><code>{livenessQuery || `up{job="${appName}"}`}</code> - Liveness checks</li>
-                  {sloEnabled && (
+                  <li><code>{form.values.livenessQuery || `up{job="${form.values.appName}"}`}</code> - Liveness checks</li>
+                  {form.values.sloEnabled && (
                     <>
                       <li><code>http_requests_total</code> - Request counter with <code>code</code> label</li>
                       <li><code>http_request_duration_seconds_bucket</code> - Latency histogram</li>
@@ -848,39 +893,98 @@ slos:
             radius="lg"
             style={{
               background: 'rgba(255, 255, 255, 0.95)',
-              textAlign: 'center',
               marginTop: '3rem',
             }}
           >
-            <Divider mb="md" />
-            <Group position="center" spacing="xl">
-              <Text size="sm" c="dimmed">
-                Built by <a
-                  href="https://cardinality.cloud/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: '#667eea',
-                    textDecoration: 'none',
-                    fontWeight: 600
-                  }}
-                >
-                  Cardinality Cloud, LLC
-                </a>
-              </Text>
-              <Text size="sm" c="dimmed">•</Text>
-              <Text size="sm">
-                <a
-                  href="mailto:jjneely@cardinality.cloud?subject=Prometheus Rule Generator Feedback"
-                  style={{
-                    color: '#667eea',
-                    textDecoration: 'none',
-                    fontWeight: 600
-                  }}
-                >
-                  Give Feedback
-                </a>
-              </Text>
+            <Divider mb="lg" />
+
+            {/* Copyright */}
+            <Text size="sm" c="dimmed" style={{ textAlign: 'center', marginBottom: '1rem' }}>
+              © 2025 Cardinality Cloud, LLC. Licensed under Apache 2.0.
+            </Text>
+
+            {/* Links */}
+            <Group position="center" spacing="xl" style={{ marginTop: '1rem' }}>
+              <a
+                href="https://cardinality.cloud/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: '#667eea',
+                  textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontWeight: 500,
+                }}
+              >
+                <IconExternalLink size={18} />
+                <span>Cardinality Cloud</span>
+              </a>
+
+              <a
+                href="https://github.com/CardinalityCloud/prometheus-alert-generator"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: '#667eea',
+                  textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontWeight: 500,
+                }}
+              >
+                <IconBrandGithub size={18} />
+                <span>GitHub</span>
+              </a>
+
+              <a
+                href="https://github.com/CardinalityCloud/prometheus-alert-generator/issues"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: '#667eea',
+                  textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontWeight: 500,
+                }}
+              >
+                <IconBug size={18} />
+                <span>Report Issues</span>
+              </a>
+
+              <Link
+                to="/faq"
+                style={{
+                  color: '#667eea',
+                  textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontWeight: 500,
+                }}
+              >
+                <IconQuestionMark size={18} />
+                <span>FAQ</span>
+              </Link>
+
+              <a
+                href="mailto:jjneely@cardinality.cloud?subject=Prometheus Alert Generator Feedback"
+                style={{
+                  color: '#667eea',
+                  textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontWeight: 500,
+                }}
+              >
+                <IconMail size={18} />
+                <span>Send Feedback</span>
+              </a>
             </Group>
           </Paper>
         </Stack>

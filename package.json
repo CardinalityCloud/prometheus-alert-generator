@@ -1,8 +1,27 @@
 {
-  "name": "makeprometheusalerts",
-  "private": true,
-  "version": "0.0.0",
+  "name": "prometheus-alert-generator",
+  "private": false,
+  "version": "0.1.0",
+  "description": "Free web-based tool to generate Prometheus alerting rules with SLO support",
   "type": "module",
+  "license": "Apache-2.0",
+  "author": "Cardinality Cloud, LLC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CardinalityCloud/prometheus-alert-generator.git"
+  },
+  "homepage": "https://prometheus-alert-generator.com",
+  "bugs": {
+    "url": "https://github.com/CardinalityCloud/prometheus-alert-generator/issues"
+  },
+  "keywords": [
+    "prometheus",
+    "alerting",
+    "slo",
+    "monitoring",
+    "observability",
+    "sre"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -11,11 +30,14 @@
   },
   "dependencies": {
     "@mantine/core": "^8.3.3",
+    "@mantine/form": "^8.3.3",
     "@mantine/hooks": "^8.3.3",
     "@tabler/icons-react": "^3.29.0",
     "js-yaml": "^4.1.0",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.9.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
