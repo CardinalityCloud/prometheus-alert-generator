@@ -893,7 +893,6 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
             radius="lg"
             style={{
               background: 'rgba(255, 255, 255, 0.95)',
-              marginTop: '3rem',
             }}
           >
 
