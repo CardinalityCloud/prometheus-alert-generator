@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { MantineProvider, Container, Title, TextInput, Textarea, NumberInput, Select, Slider, Switch, Button, Paper, Code, Stack, Group, Text, Divider, Tabs, FileButton, Alert, Accordion, Badge, Anchor, createTheme } from '@mantine/core';
+import { useState } from 'react';
+import { MantineProvider, Container, Title, TextInput, Textarea, NumberInput, Select, Slider, Switch, Button, Paper, Code, Stack, Group, Text, Divider, Tabs, FileButton, Alert, Accordion, Badge, createTheme } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconClipboardList, IconUpload, IconTarget, IconHeartbeat, IconBell, IconCopy, IconDownload, IconBrandGithub, IconBug, IconMail, IconExternalLink, IconQuestionMark } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
@@ -378,7 +378,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
         paddingBottom: '4rem'
       }}>
         <Container size="lg">
-          <Stack spacing="lg">
+          <Stack gap="lg">
             <Paper 
               p="xl" 
               radius="lg"
@@ -435,8 +435,8 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
           </Paper>
 
           <Paper shadow="md" p="xl" withBorder radius="lg" style={{ background: 'white' }}>
-            <Stack spacing="xl">
-              <Group position="apart" align="flex-start">
+            <Stack gap="xl">
+              <Group justify="apart" align="flex-start">
                 <div>
                   <Title order={2} mb="xs" style={{ fontSize: '1.75rem' }}>Configuration</Title>
                   <Text size="sm" c="dimmed">Configure your application monitoring and SLO parameters</Text>
@@ -454,8 +454,8 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
 
               {/* Basic Configuration */}
               <Paper p="lg" withBorder radius="md" style={{ backgroundColor: '#f8f9fa' }}>
-                <Stack spacing="md">
-                  <Group spacing="xs">
+                <Stack gap="md">
+                  <Group gap="xs">
                     <IconClipboardList size={22} style={{ color: '#339af0' }} />
                     <Title order={4} style={{ fontSize: '1.1rem' }}>Basic Information</Title>
                     <Badge color="red" variant="filled" size="sm">Required</Badge>
@@ -503,7 +503,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
                 <Accordion.Item value="liveness">
                   <Accordion.Control icon={<IconHeartbeat size={20} />}>Liveness / Availability Settings</Accordion.Control>
                   <Accordion.Panel>
-                    <Stack spacing="lg">
+                    <Stack gap="lg">
                       <Textarea
                         label="Liveness PromQL Query"
                         description="PromQL expression that returns 1 (up) or 0 (down) for each instance. Defaults to up{job='...'} using the Application Name above if left empty."
@@ -519,7 +519,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
                       />
 
                       <Paper p="md" withBorder style={{ backgroundColor: '#f1f3f5' }}>
-                        <Stack spacing="sm">
+                        <Stack gap="sm">
                           <Text size="sm" fw={600}>
                             Minimum Availability Threshold: {form.values.livenessAvailabilityThreshold}%
                           </Text>
@@ -562,7 +562,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
                 <Accordion.Item value="slo">
                   <Accordion.Control icon={<IconTarget size={20} />}>SLO Settings (Optional)</Accordion.Control>
                   <Accordion.Panel>
-                    <Stack spacing="md">
+                    <Stack gap="md">
                       <Switch
                         label="Generate SLO-based alerts"
                         description="Enable to generate error budget burn rate alerts"
@@ -626,10 +626,10 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
                         const downtime = calculateDowntime(form.values.sloTarget);
                         return (
                           <Paper p="md" withBorder style={{ backgroundColor: '#e7f5ff', borderColor: '#339af0' }}>
-                            <Group spacing="md" position="apart">
+                            <Group gap="md" justify="apart">
                               <div>
                                 <Text size="xs" fw={600} c="dimmed" mb={4}>ALLOWED DOWNTIME</Text>
-                                <Group spacing="xl">
+                                <Group gap="xl">
                                   <div>
                                     <Text size="sm" c="dimmed" style={{ fontSize: '0.75rem' }}>Per Month</Text>
                                     <Text size="lg" fw={700} c="#1971c2">{downtime.perMonth}</Text>
@@ -670,7 +670,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
                 <Accordion.Item value="alerts">
                   <Accordion.Control icon={<IconBell size={20} />}>Alert Settings</Accordion.Control>
                   <Accordion.Panel>
-                    <Stack spacing="md">
+                    <Stack gap="md">
                       <Select
                         label="Evaluation Interval"
                         description="How often Prometheus evaluates these rules"
@@ -768,8 +768,8 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
                 </Tabs.List>
 
                 <Tabs.Panel value="prometheus" pt="md">
-                  <Stack spacing="md">
-                    <Group position="apart">
+                  <Stack gap="md">
+                    <Group justify="apart">
                       <Title order={3}>Prometheus Rules</Title>
                       <Group>
                         <Button
@@ -807,8 +807,8 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
                 </Tabs.Panel>
 
                 <Tabs.Panel value="config" pt="md">
-                  <Stack spacing="md">
-                    <Group position="apart">
+                  <Stack gap="md">
+                    <Group justify="apart">
                       <Title order={3}>Configuration</Title>
                       <Group>
                         <Button
@@ -904,7 +904,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
             </Text>
 
             {/* Links */}
-            <Group position="center" spacing="xl" style={{ marginTop: '1rem' }}>
+            <Group justify="center" gap="xl" style={{ marginTop: '1rem' }}>
               <a
                 href="https://cardinality.cloud/"
                 target="_blank"
