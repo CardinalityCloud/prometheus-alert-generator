@@ -95,6 +95,7 @@ export default function PrometheusRuleGenerator() {
     initialValues: {
       appName: '',
       sloEnabled: true,
+      sloType: 'availability',
       sloTarget: 99.9,
       evaluationInterval: '1m',
       livenessThreshold: 5,
@@ -108,6 +109,7 @@ export default function PrometheusRuleGenerator() {
     },
     validate: {
       appName: (value: string) => (!value.trim() ? 'Application name is required' : null),
+      sloType: (value: string) => (!value.trim() ? 'SLO type is required' : null),
       livenessQuery: validatePromQLMetric,
       errorQuery: validatePromQLMetric,
       totalQuery: validatePromQLMetric,
@@ -197,11 +199,106 @@ export default function PrometheusRuleGenerator() {
     const errorBudgetQuery = `sum(increase(${effectiveErrorMetric}[${errorBudgetWindow}]))`;
     const totalBudgetQuery = `sum(increase(${effectiveTotalMetric}[${errorBudgetWindow}]))`;
 
-    // Generate Prometheus Rules - Always include liveness alert
+    // Generate Prometheus Rules
     let prometheusYaml = `groups:
   - name: ${appName}_monitoring
     interval: ${evaluationInterval}
-    rules:
+    rules:`;
+
+    // Add SLO recording rules first if enabled
+    if (sloEnabled) {
+      const sloTargetDecimal = sloTarget / 100;
+
+      prometheusYaml += `
+      # ========================================
+      # Recording Rules - SLO Metrics
+      # ========================================
+
+      # SLO Goal (constant)
+      - record: job:slo_goal:ratio
+        expr: ${sloTargetDecimal}
+        labels:
+          job: ${appName}
+          slo_type: ${form.values.sloType}
+
+      # Success ratio over 5m window
+      - record: job:slo:ratio_rate5m
+        expr: |
+          (
+            (${totalQuery5m}) - (${errorQuery5m})
+          )
+          /
+          (${totalQuery5m})
+        labels:
+          job: ${appName}
+          slo_type: ${form.values.sloType}
+
+      # Success ratio over 1h window (for fast burn detection)
+      - record: job:slo:ratio_rate1h
+        expr: |
+          (
+            (${totalQuery1h}) - (${errorQuery1h})
+          )
+          /
+          (${totalQuery1h})
+        labels:
+          job: ${appName}
+          slo_type: ${form.values.sloType}
+
+      # Success ratio over 6h window (for slow burn detection)
+      - record: job:slo:ratio_rate6h
+        expr: |
+          (
+            (${totalQuery6h}) - (${errorQuery6h})
+          )
+          /
+          (${totalQuery6h})
+        labels:
+          job: ${appName}
+          slo_type: ${form.values.sloType}
+
+      # Error ratio over 1h window (for fast burn rate)
+      - record: job:slo_burn:ratio_1h
+        expr: |
+          (${errorQuery1h})
+          /
+          (${totalQuery1h})
+        labels:
+          job: ${appName}
+          slo_type: ${form.values.sloType}
+
+      # Error ratio over 6h window (for slow burn rate)
+      - record: job:slo_burn:ratio_6h
+        expr: |
+          (${errorQuery6h})
+          /
+          (${totalQuery6h})
+        labels:
+          job: ${appName}
+          slo_type: ${form.values.sloType}
+
+      # Error budget remaining
+      - record: job:error_budget:remaining_ratio_${errorBudgetWindow}
+        expr: |
+          1 - (
+            (
+              ${errorBudgetQuery}
+              /
+              ${totalBudgetQuery}
+            ) / ${errorBudget / 100}
+          )
+        labels:
+          job: ${appName}
+          slo_type: ${form.values.sloType}
+`;
+    }
+
+    // Add alerts
+    prometheusYaml += `
+      # ========================================
+      # Alerts
+      # ========================================
+
       # Liveness / Availability Alert
       - alert: ${appName}Down
         expr: |
@@ -215,79 +312,53 @@ export default function PrometheusRuleGenerator() {
           summary: "${appName} availability below ${livenessAvailabilityThreshold}%"
           description: "Less than ${livenessAvailabilityThreshold}% of ${appName} instances are up. Current availability: {{ $value | humanizePercentage }}"${customAnnotationsFormatted}`;
 
-    // Add SLO rules only if enabled
+    // Add SLO alerts if enabled
     if (sloEnabled) {
-      const successQuery5m = `(${totalQuery5m}) - (${errorQuery5m})`;
-
       prometheusYaml += `
 
-      # SLO Recording Rule
-      - record: ${appName}:slo:ratio_rate5m
-        expr: |
-          (${successQuery5m})
-          /
-          (${totalQuery5m})
-
+      # SLO Breach Alert
       - alert: ${appName}SLOBreach
         expr: |
-          (
-            1 - ${appName}:slo:ratio_rate5m
-          ) * 100 > ${errorBudget}
+          (1 - job:slo:ratio_rate5m{job="${appName}",slo_type="${form.values.sloType}"}) * 100 > ${errorBudget}
         for: 5m
         labels:
           severity: warning
           component: ${appName}
-          alert_type: slo_breach${customLabelsFormatted}
+          alert_type: slo_breach
+          slo_type: ${form.values.sloType}${customLabelsFormatted}
         annotations:
-          summary: "${appName} SLO breach"
-          description: "Error rate for ${appName} is {{ $value | humanizePercentage }}, exceeding the error budget of ${errorBudget}% (SLO target: ${sloTarget}%)."${customAnnotationsFormatted}
+          summary: "${appName} ${form.values.sloType} SLO breach"
+          description: "Error rate for ${appName} ${form.values.sloType} SLO is {{ $value | humanizePercentage }}, exceeding the error budget of ${errorBudget}% (SLO target: ${sloTarget}%)."${customAnnotationsFormatted}
 
-      # SLO: Error Budget Burn Rate (Fast Burn - 1h window)
+      # Error Budget Fast Burn Alert
       - alert: ${appName}ErrorBudgetFastBurn
         expr: |
-          (
-            (${errorQuery1h})
-            /
-            (${totalQuery1h})
-          ) > (${errorBudget / 100} * 14.4)
+          job:slo_burn:ratio_1h{job="${appName}",slo_type="${form.values.sloType}"} > (${errorBudget / 100} * 14.4)
         for: 2m
         labels:
           severity: critical
           component: ${appName}
           alert_type: error_budget_burn
+          slo_type: ${form.values.sloType}
           burn_rate: fast${customLabelsFormatted}
         annotations:
-          summary: "${appName} is burning error budget rapidly"
-          description: "Fast burn rate detected. At this rate, the entire ${errorBudgetWindow} error budget will be exhausted in ~2 days. Current error rate: {{ $value | humanizePercentage }}."${customAnnotationsFormatted}
+          summary: "${appName} ${form.values.sloType} SLO is burning error budget rapidly"
+          description: "Fast burn rate detected for ${form.values.sloType} SLO. At this rate, the entire ${errorBudgetWindow} error budget will be exhausted in ~2 days. Current error rate: {{ $value | humanizePercentage }}."${customAnnotationsFormatted}
 
-      # SLO: Error Budget Burn Rate (Slow Burn - 6h window)
+      # Error Budget Slow Burn Alert
       - alert: ${appName}ErrorBudgetSlowBurn
         expr: |
-          (
-            (${errorQuery6h})
-            /
-            (${totalQuery6h})
-          ) > (${errorBudget / 100} * 6)
+          job:slo_burn:ratio_6h{job="${appName}",slo_type="${form.values.sloType}"} > (${errorBudget / 100} * 6)
         for: 15m
         labels:
           severity: warning
           component: ${appName}
           alert_type: error_budget_burn
+          slo_type: ${form.values.sloType}
           burn_rate: slow${customLabelsFormatted}
         annotations:
-          summary: "${appName} is burning error budget steadily"
-          description: "Slow burn rate detected. At this rate, the entire ${errorBudgetWindow} error budget will be exhausted in ~5 days. Current error rate: {{ $value | humanizePercentage }}."${customAnnotationsFormatted}
-
-      # Error Budget Remaining (Recording Rule)
-      - record: ${appName}:error_budget:remaining_ratio_${errorBudgetWindow}
-        expr: |
-          1 - (
-            (
-              ${errorBudgetQuery}
-              /
-              ${totalBudgetQuery}
-            ) / ${errorBudget / 100}
-          )`;
+          summary: "${appName} ${form.values.sloType} SLO is burning error budget steadily"
+          description: "Slow burn rate detected for ${form.values.sloType} SLO. At this rate, the entire ${errorBudgetWindow} error budget will be exhausted in ~5 days. Current error rate: {{ $value | humanizePercentage }}."${customAnnotationsFormatted}`;
     }
 
     // Generate configuration spec for saving/resuming work
@@ -306,6 +377,7 @@ liveness:
 # SLOs is an array to support multiple SLOs in the future
 slos:${sloEnabled ? `
   - enabled: true
+    type: "${form.values.sloType}"
     target: ${sloTarget}
     error_metric: "${effectiveErrorMetric}"
     total_metric: "${effectiveTotalMetric}"
@@ -339,6 +411,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
         livenessAvailabilityThreshold: config.liveness?.availability_threshold ?? form.values.livenessAvailabilityThreshold,
         livenessThreshold: config.liveness?.alert_duration_minutes ?? form.values.livenessThreshold,
         sloEnabled: (config.slos && config.slos.length > 0 && firstSlo?.enabled) ?? form.values.sloEnabled,
+        sloType: firstSlo?.type || form.values.sloType,
         sloTarget: firstSlo?.target ?? form.values.sloTarget,
         errorQuery: firstSlo?.error_metric || form.values.errorQuery,
         totalQuery: firstSlo?.total_metric || form.values.totalQuery,
@@ -571,6 +644,18 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
                           label: { fontSize: '0.95rem', fontWeight: 600 }
                         }}
                         {...form.getInputProps('sloEnabled', { type: 'checkbox' })}
+                      />
+
+                      <TextInput
+                        label="SLO Type"
+                        description="Type of SLO for labeling (e.g., 'availability', 'latency', 'correctness'). Used to differentiate multiple SLOs for the same service."
+                        placeholder="availability"
+                        size="md"
+                        disabled={!form.values.sloEnabled}
+                        styles={{
+                          label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 },
+                        }}
+                        {...form.getInputProps('sloType')}
                       />
 
                       <Textarea
