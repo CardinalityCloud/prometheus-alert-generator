@@ -257,6 +257,16 @@ export default function PrometheusRuleGenerator() {
           job: ${appName}
           slo_type: ${form.values.sloType}
 
+      # Error ratio over 5m window (for error budget tracking)
+      - record: job:slo_burn:ratio_5m
+        expr: |
+          (${errorQuery5m})
+          /
+          (${totalQuery5m})
+        labels:
+          job: ${appName}
+          slo_type: ${form.values.sloType}
+
       # Error ratio over 1h window (for fast burn rate)
       - record: job:slo_burn:ratio_1h
         expr: |
@@ -277,15 +287,13 @@ export default function PrometheusRuleGenerator() {
           job: ${appName}
           slo_type: ${form.values.sloType}
 
-      # Error budget remaining
+      # Error budget remaining (uses 5m error rate samples over the budget window)
       - record: job:error_budget:remaining_ratio_${errorBudgetWindow}
         expr: |
           1 - (
-            (
-              ${errorBudgetQuery}
-              /
-              ${totalBudgetQuery}
-            ) / ${errorBudget / 100}
+            avg_over_time(job:slo_burn:ratio_5m{job="${appName}",slo_type="${form.values.sloType}"}[${errorBudgetWindow}])
+            /
+            (${errorBudget / 100})
           )
         labels:
           job: ${appName}
@@ -316,10 +324,10 @@ export default function PrometheusRuleGenerator() {
     if (sloEnabled) {
       prometheusYaml += `
 
-      # SLO Breach Alert
+      # SLO Breach Alert - Full error budget exhausted over the SLO window
       - alert: ${appName}SLOBreach
         expr: |
-          (1 - job:slo:ratio_rate5m{job="${appName}",slo_type="${form.values.sloType}"}) * 100 > ${errorBudget}
+          job:error_budget:remaining_ratio_${errorBudgetWindow}{job="${appName}",slo_type="${form.values.sloType}"} < 0
         for: 5m
         labels:
           severity: warning
@@ -327,8 +335,8 @@ export default function PrometheusRuleGenerator() {
           alert_type: slo_breach
           slo_type: ${form.values.sloType}${customLabelsFormatted}
         annotations:
-          summary: "${appName} ${form.values.sloType} SLO breach"
-          description: "Error rate for ${appName} ${form.values.sloType} SLO is {{ $value | humanizePercentage }}, exceeding the error budget of ${errorBudget}% (SLO target: ${sloTarget}%)."${customAnnotationsFormatted}
+          summary: "${appName} ${form.values.sloType} SLO breach - error budget exhausted"
+          description: "The ${appName} ${form.values.sloType} SLO has been violated. Error budget for the ${errorBudgetWindow} window has been completely exhausted. The ${sloTarget}% availability target has not been met. Remaining budget: {{ $value | humanizePercentage }}."${customAnnotationsFormatted}
 
       # Error Budget Fast Burn Alert
       - alert: ${appName}ErrorBudgetFastBurn
