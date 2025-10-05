@@ -196,9 +196,6 @@ export default function PrometheusRuleGenerator() {
     const errorQuery6h = `sum(rate(${effectiveErrorMetric}[6h]))`;
     const totalQuery6h = `sum(rate(${effectiveTotalMetric}[6h]))`;
 
-    const errorBudgetQuery = `sum(increase(${effectiveErrorMetric}[${errorBudgetWindow}]))`;
-    const totalBudgetQuery = `sum(increase(${effectiveTotalMetric}[${errorBudgetWindow}]))`;
-
     // Generate Prometheus Rules
     let prometheusYaml = `groups:
   - name: ${appName}_monitoring
