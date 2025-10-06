@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { MantineProvider, Container, Title, TextInput, Textarea, NumberInput, Select, Slider, Switch, Button, Paper, Code, Stack, Group, Text, Divider, Tabs, FileButton, Alert, Accordion, Badge, createTheme } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { IconClipboardList, IconUpload, IconTarget, IconHeartbeat, IconBell, IconCopy, IconDownload, IconBrandGithub, IconBug, IconMail, IconExternalLink, IconQuestionMark } from '@tabler/icons-react';
+import { IconClipboardList, IconUpload, IconTarget, IconHeartbeat, IconBell, IconCopy, IconDownload, IconBrandGithub, IconBug, IconMail, IconExternalLink, IconQuestionMark, IconNews } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 import * as yaml from 'js-yaml';
 
@@ -1052,6 +1052,23 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
                 <IconQuestionMark size={18} />
                 <span>FAQ</span>
               </Link>
+
+              <a
+                href="https://cardinality.cloud/blog/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: '#667eea',
+                  textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontWeight: 500,
+                }}
+              >
+                <IconNews size={18} />
+                <span>Blog</span>
+              </a>
 
               <a
                 href="mailto:jjneely@cardinality.cloud?subject=Prometheus Alert Generator Feedback"
