@@ -985,14 +985,8 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
               background: 'rgba(255, 255, 255, 0.95)',
             }}
           >
-
-            {/* Copyright */}
-            <Text size="sm" c="dimmed" style={{ textAlign: 'center', marginBottom: '1rem' }}>
-              © 2025 Cardinality Cloud, LLC. Licensed under Apache 2.0.
-            </Text>
-
             {/* Links */}
-            <Group justify="center" gap="xl" style={{ marginTop: '1rem' }}>
+            <Group justify="center" gap="xl" style={{ marginBottom: '1rem' }}>
               <a
                 href="https://cardinality.cloud/"
                 target="_blank"
@@ -1074,6 +1068,28 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
                 <span>Send Feedback</span>
               </a>
             </Group>
+
+            {/* Copyright */}
+            <Text size="sm" c="dimmed" style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
+              © 2025 Cardinality Cloud, LLC. Licensed under Apache 2.0.
+            </Text>
+
+            {/* Version Info */}
+            <Text size="xs" c="dimmed" style={{ textAlign: 'center' }}>
+              v{__APP_VERSION__} (
+              <a
+                href={`https://github.com/CardinalityCloud/prometheus-alert-generator/commit/${__GIT_COMMIT_SHA__}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: 'inherit',
+                  textDecoration: 'none',
+                }}
+              >
+                {__GIT_COMMIT_SHA__}
+              </a>
+              ) • Built: {new Date(__BUILD_DATE__).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+            </Text>
           </Paper>
         </Stack>
       </Container>
