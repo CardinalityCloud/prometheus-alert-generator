@@ -5,6 +5,8 @@ import { IconClipboardList, IconUpload, IconTarget, IconHeartbeat, IconBell, Ico
 import { Link } from 'react-router-dom';
 import * as yaml from 'js-yaml';
 
+const enableAds = false;
+
 const theme = createTheme({
   fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
   primaryColor: 'blue',
@@ -492,7 +494,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
             </Paper>
 
           {/* Top Banner Ad Placement */}
-          <Paper 
+          {enableAds && (<Paper
             p="md" 
             radius="lg"
             withBorder 
@@ -510,7 +512,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
               {/* Carbon Ads or other ad network code goes here */}
               <Text size="xs" c="dimmed">Advertisement</Text>
             </div>
-          </Paper>
+          </Paper>)}
 
           <Paper shadow="md" p="xl" withBorder radius="lg" style={{ background: 'white' }}>
             <Stack gap="xl">
@@ -827,7 +829,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
           </Paper>
 
           {/* Mid-Page Ad Placement - Shows after form submission */}
-          {generatedPrometheus && (
+          {enableAds && generatedPrometheus && (
             <Paper 
               p="md" 
               radius="lg"
@@ -955,7 +957,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
           )}
 
           {/* Bottom Ad Placement - Shows after output */}
-          {generatedPrometheus && (
+          {enableAds && generatedPrometheus && (
             <Paper 
               p="md" 
               radius="lg"
