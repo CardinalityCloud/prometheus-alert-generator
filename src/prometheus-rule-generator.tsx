@@ -155,8 +155,6 @@ export default function PrometheusRuleGenerator() {
     const { appName, sloEnabled, sloTarget, evaluationInterval, livenessThreshold, livenessQuery,
             livenessAvailabilityThreshold, errorBudgetWindow, errorQuery, totalQuery, customAlertLabels, customAlertAnnotations } = form.values;
 
-    const errorBudget = 100 - sloTarget;
-
     // Parse custom alert labels and annotations
     const parseCustomFields = (fieldsText: string): string => {
       if (!fieldsText.trim()) return '';
@@ -292,7 +290,7 @@ export default function PrometheusRuleGenerator() {
           1 - (
             avg_over_time(job:slo_burn:ratio_5m{job="${appName}",slo_type="${form.values.sloType}"}[${errorBudgetWindow}])
             /
-            (${errorBudget / 100})
+            (1 - job:slo_goal:ratio{job="${appName}",slo_type="${form.values.sloType}"})
           )
         labels:
           job: ${appName}
@@ -340,7 +338,7 @@ export default function PrometheusRuleGenerator() {
       # Error Budget Fast Burn Alert
       - alert: ${appName}ErrorBudgetFastBurn
         expr: |
-          job:slo_burn:ratio_1h{job="${appName}",slo_type="${form.values.sloType}"} > (${errorBudget / 100} * 14.4)
+          job:slo_burn:ratio_1h{job="${appName}",slo_type="${form.values.sloType}"} > ((1 - job:slo_goal:ratio{job="${appName}",slo_type="${form.values.sloType}"}) * 14.4)
         for: 2m
         labels:
           severity: critical
@@ -355,7 +353,7 @@ export default function PrometheusRuleGenerator() {
       # Error Budget Slow Burn Alert
       - alert: ${appName}ErrorBudgetSlowBurn
         expr: |
-          job:slo_burn:ratio_6h{job="${appName}",slo_type="${form.values.sloType}"} > (${errorBudget / 100} * 6)
+          job:slo_burn:ratio_6h{job="${appName}",slo_type="${form.values.sloType}"} > ((1 - job:slo_goal:ratio{job="${appName}",slo_type="${form.values.sloType}"}) * 6)
         for: 15m
         labels:
           severity: warning
