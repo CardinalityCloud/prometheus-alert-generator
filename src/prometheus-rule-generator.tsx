@@ -204,7 +204,7 @@ export default function PrometheusRuleGenerator() {
 
     // Add SLO recording rules first if enabled
     if (sloEnabled) {
-      const sloTargetDecimal = sloTarget / 100;
+      const sloTargetDecimal = Math.round((sloTarget / 100) * 1000000) / 1000000;
 
       prometheusYaml += `
       # ========================================
