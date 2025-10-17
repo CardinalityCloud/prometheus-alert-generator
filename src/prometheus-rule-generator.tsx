@@ -1,57 +1,13 @@
 import { useState } from 'react';
-import { MantineProvider, Container, Title, TextInput, Textarea, NumberInput, Select, Slider, Switch, Button, Paper, Code, Stack, Group, Text, Divider, Tabs, FileButton, Alert, Accordion, Badge, createTheme } from '@mantine/core';
+import { MantineProvider, Container, Title, TextInput, Textarea, NumberInput, Select, Slider, Switch, Button, Paper, Code, Stack, Group, Text, Divider, Tabs, FileButton, Alert, Accordion, Badge } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { IconClipboardList, IconUpload, IconTarget, IconHeartbeat, IconBell, IconCopy, IconDownload, IconBrandGithub, IconBug, IconMail, IconExternalLink, IconQuestionMark, IconNews } from '@tabler/icons-react';
-import { Link } from 'react-router-dom';
+import { IconClipboardList, IconUpload, IconTarget, IconHeartbeat, IconBell, IconCopy, IconDownload } from '@tabler/icons-react';
 import * as yaml from 'js-yaml';
+import { Masthead } from './components/Masthead';
+import { Footer } from './components/Footer';
+import { theme } from './theme';
 
 const enableAds = false;
-
-const theme = createTheme({
-  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  primaryColor: 'blue',
-  defaultRadius: 'md',
-  colors: {
-    blue: [
-      '#e7f5ff',
-      '#d0ebff',
-      '#a5d8ff',
-      '#74c0fc',
-      '#4dabf7',
-      '#339af0',
-      '#228be6',
-      '#1c7ed6',
-      '#1971c2',
-      '#1864ab'
-    ],
-  },
-  shadows: {
-    sm: '0 1px 3px rgba(0, 0, 0, 0.05)',
-    md: '0 4px 6px rgba(0, 0, 0, 0.07)',
-    lg: '0 10px 15px rgba(0, 0, 0, 0.1)',
-  },
-  components: {
-    Paper: {
-      defaultProps: {
-        shadow: 'sm',
-      },
-    },
-    Button: {
-      defaultProps: {
-        radius: 'md',
-      },
-    },
-    TextInput: {
-      styles: {
-        input: {
-          '&:focus': {
-            borderColor: '#339af0',
-          },
-        },
-      },
-    },
-  },
-});
 
 export default function PrometheusRuleGenerator() {
   const [generatedPrometheus, setGeneratedPrometheus] = useState('');
@@ -449,47 +405,21 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
 
   return (
     <MantineProvider theme={theme}>
-      <div style={{ 
-        minHeight: '100vh', 
+      <div style={{
+        minHeight: '100vh',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         paddingTop: '2rem',
         paddingBottom: '4rem'
       }}>
         <Container size="lg">
           <Stack gap="lg">
-            <Paper 
-              p="xl" 
-              radius="lg"
-              style={{
-                background: 'rgba(255, 255, 255, 0.98)',
-                backdropFilter: 'blur(10px)',
-              }}
-            >
-              <div style={{ textAlign: 'center' }}>
-                <Title
-                  order={1}
-                  mb="xs"
-                  style={{
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    fontSize: '2.5rem',
-                    fontWeight: 700,
-                  }}
-                >
-                  Free Prometheus Alert Rule Generator
-                </Title>
-                <Text c="dimmed" size="lg">Generate Prometheus alerting rules and SLOs for comprehensive monitoring.</Text>
-                <Group justify="center" mt="md" mb="xs">
-                  <Button component={Link} to="/faq" variant="light" leftSection={<IconQuestionMark size={18} />}>
-                    FAQ
-                  </Button>
-                </Group>
-                <Text size="sm" c="dimmed" style={{ fontWeight: 500 }}>
-                  Brought to you by <a href="https://cardinality.cloud/" target="_blank" rel="noopener noreferrer" style={{ color: '#667eea', textDecoration: 'none', fontWeight: 600 }}>Cardinality Cloud, LLC</a>.
-                </Text>
-              </div>
-            </Paper>
+            <Masthead
+              title="Free Prometheus Alert Rule Generator"
+              subtitle="Generate Prometheus alerting rules and SLOs for comprehensive monitoring."
+              showAlertGeneratorButton={false}
+              showResourceCalculatorButton={true}
+              showFaqButton={true}
+            />
 
           {/* Top Banner Ad Placement */}
           {enableAds && (<Paper
@@ -977,137 +907,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
             </Paper>
           )}
 
-          {/* Footer */}
-          <Paper
-            p="xl"
-            radius="lg"
-            style={{
-              background: 'rgba(255, 255, 255, 0.95)',
-            }}
-          >
-            {/* Links */}
-            <Group justify="center" gap="xl" style={{ marginBottom: '1rem' }}>
-              <a
-                href="https://cardinality.cloud/"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  color: '#667eea',
-                  textDecoration: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  fontWeight: 500,
-                }}
-              >
-                <IconExternalLink size={18} />
-                <span>Cardinality Cloud</span>
-              </a>
-
-              <a
-                href="https://github.com/CardinalityCloud/prometheus-alert-generator"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  color: '#667eea',
-                  textDecoration: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  fontWeight: 500,
-                }}
-              >
-                <IconBrandGithub size={18} />
-                <span>GitHub</span>
-              </a>
-
-              <a
-                href="https://github.com/CardinalityCloud/prometheus-alert-generator/issues"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  color: '#667eea',
-                  textDecoration: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  fontWeight: 500,
-                }}
-              >
-                <IconBug size={18} />
-                <span>Report Issues</span>
-              </a>
-
-              <Link
-                to="/faq"
-                style={{
-                  color: '#667eea',
-                  textDecoration: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  fontWeight: 500,
-                }}
-              >
-                <IconQuestionMark size={18} />
-                <span>FAQ</span>
-              </Link>
-
-              <a
-                href="https://cardinality.cloud/blog/"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  color: '#667eea',
-                  textDecoration: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  fontWeight: 500,
-                }}
-              >
-                <IconNews size={18} />
-                <span>Blog</span>
-              </a>
-
-              <a
-                href="mailto:jjneely@cardinality.cloud?subject=Prometheus Alert Generator Feedback"
-                style={{
-                  color: '#667eea',
-                  textDecoration: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  fontWeight: 500,
-                }}
-              >
-                <IconMail size={18} />
-                <span>Send Feedback</span>
-              </a>
-            </Group>
-
-            {/* Copyright */}
-            <Text size="sm" c="dimmed" style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
-              © 2025 Cardinality Cloud, LLC. Licensed under Apache 2.0.
-            </Text>
-
-            {/* Version Info */}
-            <Text size="xs" c="dimmed" style={{ textAlign: 'center' }}>
-              v{__APP_VERSION__} (
-              <a
-                href={`https://github.com/CardinalityCloud/prometheus-alert-generator/commit/${__GIT_COMMIT_SHA__}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  color: 'inherit',
-                  textDecoration: 'none',
-                }}
-              >
-                {__GIT_COMMIT_SHA__}
-              </a>
-              ) • Built: {new Date(__BUILD_DATE__).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
-            </Text>
-          </Paper>
+          <Footer />
         </Stack>
       </Container>
       </div>

@@ -4,7 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a free web-based tool for generating Prometheus alerting rules with SLO (Service Level Objective) support. The application generates both SLO-based burn rate alerts and traditional availability alerts for monitoring applications.
+This is a free web-based tool suite for Prometheus monitoring, providing two main tools:
+
+1. **Alert Rule Generator** - Generates Prometheus alerting rules with SLO (Service Level Objective) support
+2. **Resource Calculator** - Calculates memory, CPU, and disk space requirements for Prometheus deployments
 
 **Key Features:**
 - SLO-based alerting with multi-window burn rate detection
@@ -12,6 +15,7 @@ This is a free web-based tool for generating Prometheus alerting rules with SLO 
 - YAML configuration export for Prometheus
 - Form validation for PromQL metric patterns
 - Custom alert labels and annotations support
+- Resource requirement calculations based on time series count, scrape interval, and retention period
 
 ## Development Commands
 
@@ -41,11 +45,13 @@ npm run preview
 - **Routing:** React Router DOM v7
 - **YAML Processing:** js-yaml
 - **Icons:** Tabler Icons React
+- **Data Visualization:** Observable Plot (for resource calculator charts)
 
 ### Application Structure
 
-The app is a single-page application with three routes defined in `src/App.tsx`:
+The app is a single-page application with four routes defined in `src/App.tsx`:
 - `/` - Main rule generator (`PrometheusRuleGenerator` component)
+- `/resources` - Resource calculator (`ResourceCalculator` component)
 - `/faq` - FAQ page (`Faq` component)
 - `*` - 404 page (`NotFound` component)
 
@@ -74,6 +80,48 @@ This is the main component (~1100 lines) that handles:
    - Wraps user-provided raw metrics with `sum(rate(...))` aggregations
    - Defaults to `http_requests_total` with appropriate label matchers if not specified
    - Supports custom metric queries with label selectors
+
+### Resource Calculator (`src/ResourceCalculator.tsx`)
+
+This component calculates Prometheus resource requirements based on user input:
+
+1. **Input Parameters:**
+   - **Active Time Series** (required): Number of unique time series tracked by Prometheus
+   - **Scrape Interval** (default 60s): How often Prometheus scrapes metrics
+   - **Retention Period** (default 30 days): How long to keep historical data
+
+2. **Calculations:**
+   - **Memory:** Based on 7.5 KiB per time series (recommended), with safe range of 7-9 KiB
+   - **CPU Cores:** `Math.max(2, Math.round(memoryGB / 4))` - 1 core per 4GB of memory, minimum 2 cores
+   - **Disk Space:** `(timeSeries × (retentionDays × 86400 / scrapeInterval) × 1.5 bytes per sample) / (1024³) × 1.2`
+     - Assumes 1.5 bytes per sample
+     - Includes 20% buffer for WAL (Write-Ahead Log)
+     - Automatically displays in GB or TB based on size
+
+3. **Visualization:**
+   - Uses Observable Plot to render interactive chart showing memory requirements
+   - Displays three lines: lower bound (7 KiB), recommended (7.5 KiB), upper bound (9 KiB)
+   - Shows example configuration dots at 100K, 200K, 500K, 1M, 2M, 5M, and 10M time series
+   - User's configuration appears as a red dot on the chart
+   - Logarithmic x-axis scale for better visualization across orders of magnitude
+   - Tooltips show memory requirements and safe ranges for each point
+
+### Shared Components
+
+**`src/components/Masthead.tsx`:**
+- Reusable header component with navigation between tools
+- Props control visibility of Alert Generator, Resource Calculator, and FAQ buttons
+- Consistent branding across all pages
+
+**`src/components/Footer.tsx`:**
+- Reusable footer with links to GitHub, FAQ, Blog, and Email feedback
+- Displays app version and build date
+- Uses HTML entities for special characters
+
+**`src/theme.ts`:**
+- Shared Mantine theme configuration
+- Inter font family, blue color scheme, custom shadows
+- Consistent styling across all pages
 
 ### FAQ Content (`src/faq-content.ts`)
 
