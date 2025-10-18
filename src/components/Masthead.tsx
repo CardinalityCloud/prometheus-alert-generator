@@ -1,6 +1,7 @@
 import { Paper, Title, Text, Group, Button } from '@mantine/core';
 import { IconQuestionMark, IconChartBar } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
+import { theme } from '../theme';
 
 interface MastheadProps {
   title: string;
@@ -31,7 +32,7 @@ export function Masthead({
           order={1}
           mb="xs"
           style={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: theme.other!.gradients.primary,
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             fontSize: '2.5rem',
@@ -59,7 +60,7 @@ export function Masthead({
           )}
         </Group>
         <Text size="sm" c="dimmed" style={{ fontWeight: 500 }}>
-          Brought to you by <a href="https://cardinality.cloud/" target="_blank" rel="noopener noreferrer" style={{ color: '#667eea', textDecoration: 'none', fontWeight: 600 }}>Cardinality Cloud, LLC</a>.
+          Brought to you by <a href="https://cardinality.cloud/" target="_blank" rel="noopener noreferrer" style={{ color: theme.colors!.purple![5], textDecoration: 'none', fontWeight: 600 }}>Cardinality Cloud, LLC</a>.
         </Text>
       </div>
     </Paper>

@@ -46,6 +46,7 @@ npm run preview
 - **YAML Processing:** js-yaml
 - **Icons:** Tabler Icons React
 - **Data Visualization:** Observable Plot (for resource calculator charts)
+- **Math Rendering:** KaTeX (via remark-math and rehype-katex)
 
 ### Application Structure
 
@@ -112,20 +113,51 @@ This component calculates Prometheus resource requirements based on user input:
 - Reusable header component with navigation between tools
 - Props control visibility of Alert Generator, Resource Calculator, and FAQ buttons
 - Consistent branding across all pages
+- Uses theme gradient for title text with background-clip technique
 
 **`src/components/Footer.tsx`:**
 - Reusable footer with links to GitHub, FAQ, Blog, and Email feedback
 - Displays app version and build date
-- Uses HTML entities for special characters
+- Uses HTML entities for special characters (e.g., `&copy;`, `&bull;`)
+
+**`src/components/InfoBox.tsx`:**
+- Reusable styled Paper component for displaying important information
+- Automatically uses theme colors: `purple[0]` for background, `purple[5]` for border
+- Accepts optional `color` prop to use different theme colors
+- Used for:
+  - Resource calculator results display
+  - SLO allowed downtime display
+  - Any highlighted information boxes
+- Ensures visual consistency across all info displays
 
 **`src/theme.ts`:**
 - Shared Mantine theme configuration
-- Inter font family, blue color scheme, custom shadows
-- Consistent styling across all pages
+- **Primary Color:** Purple (matching brand gradient)
+- **Purple Color Scale:** 10-shade palette from `#f3f0ff` (lightest) to `#4a2c5f` (darkest)
+  - `purple[5]`: `#667eea` - Brand gradient start color
+  - `purple[7]`: `#764ba2` - Brand gradient end color
+  - `purple[8]`: `#5f3a7d` - Used for text emphasis in InfoBoxes
+- **Centralized Gradient:** `theme.other.gradients.primary` = `linear-gradient(135deg, #667eea 0%, #764ba2 100%)`
+  - Used for page backgrounds, buttons, and text gradients
+  - Single source of truth for brand gradient
+- **Font:** Inter with system font fallbacks
+- **Custom Shadows:** sm, md, lg variants
+- **Component Defaults:**
+  - Paper: `shadow: 'sm'`
+  - Button: `radius: 'md'`
+  - TextInput: Focus border uses purple (`#667eea`)
 
 ### FAQ Content (`src/faq-content.ts`)
 
 Structured FAQ items with markdown support, icons, and unique IDs for navigation. The FAQ is rendered using `react-markdown` in `src/Faq.tsx`.
+
+**Math Rendering:**
+- FAQ includes mathematical formulas using LaTeX syntax (e.g., integrals, summations)
+- Uses KaTeX for fast, beautiful math rendering
+- Display math (block): `$$...$$` syntax
+- Inline math: `$...$` syntax (if needed)
+- Configured via `remark-math` and `rehype-katex` plugins in `Faq.tsx`
+- Example: Riemann Sum approximations for error budget calculations
 
 ### Build Configuration
 
@@ -176,6 +208,58 @@ The generated Prometheus rules include:
 This separation improves query performance and allows dashboard visualization of SLO metrics.
 
 **Design Pattern:** Alerting rules and dependent recording rules dynamically reference the `job:slo_goal:ratio` recording rule (e.g., `1 - job:slo_goal:ratio{...}`) rather than embedding hardcoded error budget values. This allows the SLO goal to be adjusted by updating a single recording rule without regenerating the entire configuration.
+
+## Styling & Theming
+
+### Color Palette
+
+The app uses a unified purple theme that matches the brand gradient:
+
+**Brand Gradient:** `#667eea` → `#764ba2`
+- Used for: page backgrounds, buttons, title text, accent colors
+
+**Purple Scale (10 shades):**
+```typescript
+purple[0]: '#f3f0ff' // InfoBox backgrounds
+purple[1]: '#e5dbff' // Very light
+purple[2]: '#d0bfff' // Light
+purple[3]: '#b197fc' // Light-medium
+purple[4]: '#9775fa' // Medium-light
+purple[5]: '#667eea' // Brand gradient start ⭐
+purple[6]: '#7265d4' // Medium-dark
+purple[7]: '#764ba2' // Brand gradient end ⭐
+purple[8]: '#5f3a7d' // Text emphasis (used in InfoBox values)
+purple[9]: '#4a2c5f' // Darkest
+```
+
+### Theme Usage Best Practices
+
+**DO:**
+- ✅ Use `theme.other.gradients.primary` for gradients
+- ✅ Use `theme.colors.purple[n]` for purple shades
+- ✅ Use `InfoBox` component for highlighted information displays
+- ✅ Use Mantine's color tokens: `c="purple.8"` for text colors
+- ✅ Reference theme in components: `import { theme } from './theme'`
+
+**DON'T:**
+- ❌ Hardcode hex colors like `#667eea` or `#764ba2`
+- ❌ Hardcode `linear-gradient(...)` - use theme gradient instead
+- ❌ Create custom Paper components with hardcoded colors - use InfoBox
+- ❌ Use blue colors (old theme) - use purple
+
+### Character Encoding
+
+**All source files use 7-bit ASCII only:**
+- Special characters use HTML entities (e.g., `&copy;`, `&bull;`, `&larr;`)
+- Icons use Tabler Icons React components (SVG-based)
+- Math symbols use KaTeX/LaTeX syntax
+- No UTF-8 characters beyond ASCII range
+
+**Examples:**
+- Copyright: `&copy;` not `©`
+- Bullet: `&bull;` not `•`
+- Arrows: Use `IconArrowLeft` component, not `←` character
+- Math: Use `$$\int_0^T$$` not `∫₀ᵀ`
 
 ## Deployment
 

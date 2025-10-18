@@ -3,6 +3,8 @@ import { Container, Paper, Stack, NumberInput, Button, Card, Text, Group, Badge 
 import * as Plot from '@observablehq/plot';
 import { Masthead } from './components/Masthead';
 import { Footer } from './components/Footer';
+import { InfoBox } from './components/InfoBox';
+import { theme } from './theme';
 
 export function ResourceCalculator() {
   const [timeSeriesInput, setTimeSeriesInput] = useState<number | string>('');
@@ -204,7 +206,7 @@ export function ResourceCalculator() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: theme.other!.gradients.primary,
       paddingTop: '2rem',
       paddingBottom: '4rem'
     }}>
@@ -278,7 +280,7 @@ export function ResourceCalculator() {
                     onClick={handleCalculate}
                     size="lg"
                     style={{
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      background: theme.other!.gradients.primary,
                       transition: 'transform 0.2s',
                     }}
                     onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
@@ -290,7 +292,7 @@ export function ResourceCalculator() {
               </div>
 
               {userPoint && (
-                <Card withBorder style={{ backgroundColor: '#d1ecf1', borderLeftWidth: 3, borderLeftColor: '#0dcaf0' }}>
+                <InfoBox>
                   <Stack gap="xs">
                     <Text size="lg" fw={700}>
                       For {userTimeSeries?.toLocaleString()} active time series:
@@ -298,19 +300,19 @@ export function ResourceCalculator() {
                     <Group gap="xl" wrap="wrap">
                       <div>
                         <Text size="sm" c="dimmed">Recommended Memory</Text>
-                        <Text size="xl" fw={700} c="blue">{userPoint.memoryGB.toFixed(2)} GB</Text>
+                        <Text size="xl" fw={700} c="purple.8">{userPoint.memoryGB.toFixed(2)} GB</Text>
                       </div>
                       <div>
                         <Text size="sm" c="dimmed">Safe Range</Text>
-                        <Text size="xl" fw={700} c="blue">{userPoint.minMemoryGB.toFixed(2)} GB - {userPoint.maxMemoryGB.toFixed(2)} GB</Text>
+                        <Text size="xl" fw={700} c="purple.8">{userPoint.minMemoryGB.toFixed(2)} GB - {userPoint.maxMemoryGB.toFixed(2)} GB</Text>
                       </div>
                       <div>
                         <Text size="sm" c="dimmed">Recommended CPU Cores</Text>
-                        <Text size="xl" fw={700} c="blue">{userPoint.cpuCores}</Text>
+                        <Text size="xl" fw={700} c="purple.8">{userPoint.cpuCores}</Text>
                       </div>
                       <div>
                         <Text size="sm" c="dimmed">Disk Space Required</Text>
-                        <Text size="xl" fw={700} c="blue">
+                        <Text size="xl" fw={700} c="purple.8">
                           {userPoint.diskSpaceGB >= 1024
                             ? `${(userPoint.diskSpaceGB / 1024).toFixed(2)} TB`
                             : `${userPoint.diskSpaceGB.toFixed(2)} GB`}
@@ -318,7 +320,7 @@ export function ResourceCalculator() {
                       </div>
                     </Group>
                   </Stack>
-                </Card>
+                </InfoBox>
               )}
             </Stack>
           </Paper>

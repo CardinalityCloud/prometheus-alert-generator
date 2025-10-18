@@ -1,11 +1,13 @@
 import { Container, Title, Text, Button } from '@mantine/core';
+import { IconArrowLeft } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
+import { theme } from './theme';
 
 export function NotFound() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: theme.other!.gradients.primary,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -25,7 +27,7 @@ export function NotFound() {
           style={{
             fontSize: '8rem',
             fontWeight: 700,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: theme.other!.gradients.primary,
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             lineHeight: 1,
@@ -76,12 +78,13 @@ export function NotFound() {
           component={Link}
           to="/"
           size="lg"
+          leftSection={<IconArrowLeft size={18} />}
           style={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: theme.other!.gradients.primary,
             boxShadow: '0 4px 6px rgba(102, 126, 234, 0.3)',
           }}
         >
-          ← Back to Generator
+          Back to Generator
         </Button>
       </Container>
     </div>

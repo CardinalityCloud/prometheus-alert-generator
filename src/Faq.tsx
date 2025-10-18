@@ -1,9 +1,13 @@
 import { Container, Accordion, Paper, Group, Anchor, Stack } from '@mantine/core';
 import { IconBrandGithub, IconBug, IconMail, IconQuestionMark } from '@tabler/icons-react';
 import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 import { faqItems } from './faq-content';
 import { Masthead } from './components/Masthead';
 import { Footer } from './components/Footer';
+import { theme } from './theme';
 
 const iconMap = {
   github: IconBrandGithub,
@@ -16,7 +20,7 @@ export function Faq() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: theme.other!.gradients.primary,
       paddingTop: '2rem',
       paddingBottom: '4rem'
     }}>
@@ -52,6 +56,8 @@ export function Faq() {
                     </Accordion.Control>
                     <Accordion.Panel>
                       <ReactMarkdown
+                        remarkPlugins={[remarkMath]}
+                        rehypePlugins={[rehypeKatex]}
                         components={{
                           a: ({ node, ...props }) => (
                             <Anchor {...props} target="_blank" rel="noopener noreferrer" />
@@ -74,7 +80,7 @@ export function Faq() {
 
             <Group style={{ marginTop: '3rem', justifyContent: 'center' }}>
               <Anchor href="/" size="sm">
-                &larr; Back to Generator
+                Back to Generator
               </Anchor>
             </Group>
           </Paper>

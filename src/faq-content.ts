@@ -101,11 +101,11 @@ Then, to calculate error budget remaining over the full 30-day window, we use:
 
 This technique is inspired by Riemann Sums from calculus. The error budget consumed over a time period is:
 
-∫₀ᵀ error_rate(t) dt / ∫₀ᵀ total_rate(t) dt
+$$\\int_0^T \\text{error\\_rate}(t) \\, dt \\, / \\, \\int_0^T \\text{total\\_rate}(t) \\, dt$$
 
 By sampling the error ratio at regular intervals (every evaluation, typically 1m), we're approximating this integral as:
 
-(1/n) × Σᵢ₌₁ⁿ (error_rate(tᵢ) / total_rate(tᵢ))
+$$\\frac{1}{n} \\times \\sum_{i=1}^{n} \\frac{\\text{error\\_rate}(t_i)}{\\text{total\\_rate}(t_i)}$$
 
 This is exactly what \`avg_over_time(job:slo_burn:ratio_5m[30d])\` computes - it takes the average of all 5-minute error ratio samples over the 30-day window. The 5-minute window smooths out instantaneous spikes while the evaluation interval (1m) ensures we sample frequently enough to capture meaningful changes.
 

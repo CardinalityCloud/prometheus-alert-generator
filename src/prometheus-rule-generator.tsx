@@ -5,6 +5,7 @@ import { IconClipboardList, IconUpload, IconTarget, IconHeartbeat, IconBell, Ico
 import * as yaml from 'js-yaml';
 import { Masthead } from './components/Masthead';
 import { Footer } from './components/Footer';
+import { InfoBox } from './components/InfoBox';
 import { theme } from './theme';
 
 const enableAds = false;
@@ -407,7 +408,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
     <MantineProvider theme={theme}>
       <div style={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: theme.other!.gradients.primary,
         paddingTop: '2rem',
         paddingBottom: '4rem'
       }}>
@@ -645,18 +646,18 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
                       {form.values.sloEnabled && (() => {
                         const downtime = calculateDowntime(form.values.sloTarget);
                         return (
-                          <Paper p="md" withBorder style={{ backgroundColor: '#e7f5ff', borderColor: '#339af0' }}>
+                          <InfoBox>
                             <Group gap="md" justify="apart">
                               <div>
                                 <Text size="xs" fw={600} c="dimmed" mb={4}>ALLOWED DOWNTIME</Text>
                                 <Group gap="xl">
                                   <div>
                                     <Text size="sm" c="dimmed" style={{ fontSize: '0.75rem' }}>Per Month</Text>
-                                    <Text size="lg" fw={700} c="#1971c2">{downtime.perMonth}</Text>
+                                    <Text size="lg" fw={700} c="purple.8">{downtime.perMonth}</Text>
                                   </div>
                                   <div>
                                     <Text size="sm" c="dimmed" style={{ fontSize: '0.75rem' }}>Per Year</Text>
-                                    <Text size="lg" fw={700} c="#1971c2">{downtime.perYear}</Text>
+                                    <Text size="lg" fw={700} c="purple.8">{downtime.perYear}</Text>
                                   </div>
                                 </Group>
                               </div>
@@ -664,7 +665,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
                                 Maximum acceptable downtime for {form.values.sloTarget}% SLO target
                               </Text>
                             </Group>
-                          </Paper>
+                          </InfoBox>
                         );
                       })()}
 
@@ -745,7 +746,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
                 disabled={!form.values.appName}
                 fullWidth
                 style={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: theme.other!.gradients.primary,
                   transition: 'transform 0.2s',
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
