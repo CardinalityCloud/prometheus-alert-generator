@@ -140,7 +140,10 @@ This component calculates Prometheus resource requirements based on user input:
 - **Centralized Gradient:** `theme.other.gradients.primary` = `linear-gradient(135deg, #667eea 0%, #764ba2 100%)`
   - Used for page backgrounds, buttons, and text gradients
   - Single source of truth for brand gradient
-- **Font:** Inter with system font fallbacks
+- **Fonts:**
+  - `fontFamily`: Fira Sans with system font fallbacks (`-apple-system`, `BlinkMacSystemFont`, `Segoe UI`, `Roboto`)
+  - `fontFamilyMonospace`: Fira Code with monospace fallbacks (`ui-monospace`, `SFMono-Regular`, `SF Mono`, `Menlo`, `Consolas`, `Liberation Mono`)
+  - Both loaded from Google Fonts in `index.html`
 - **Custom Shadows:** sm, md, lg variants
 - **Component Defaults:**
   - Paper: `shadow: 'sm'`

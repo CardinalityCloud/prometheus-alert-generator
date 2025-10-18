@@ -15,7 +15,8 @@ const purpleColor: MantineColorsTuple = [
 ];
 
 export const theme = createTheme({
-  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  fontFamily: '"Fira Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  fontFamilyMonospace: '"Fira Code", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
   primaryColor: 'purple',
   defaultRadius: 'md',
   colors: {

@@ -522,7 +522,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
                         size="md"
                         styles={{
                           label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 },
-                          input: { fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.9rem' }
+                          input: { fontFamily: theme.fontFamilyMonospace, fontSize: '0.9rem' }
                         }}
                         {...form.getInputProps('livenessQuery')}
                       />
@@ -604,7 +604,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
                         disabled={!form.values.sloEnabled}
                         styles={{
                           label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 },
-                          input: { fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.9rem' }
+                          input: { fontFamily: theme.fontFamilyMonospace, fontSize: '0.9rem' }
                         }}
                         {...form.getInputProps('errorQuery')}
                       />
@@ -619,7 +619,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
                         disabled={!form.values.sloEnabled}
                         styles={{
                           label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 },
-                          input: { fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.9rem' }
+                          input: { fontFamily: theme.fontFamilyMonospace, fontSize: '0.9rem' }
                         }}
                         {...form.getInputProps('totalQuery')}
                       />
@@ -717,7 +717,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
                         size="md"
                         styles={{
                           label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 },
-                          input: { fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.9rem' }
+                          input: { fontFamily: theme.fontFamilyMonospace, fontSize: '0.9rem' }
                         }}
                         {...form.getInputProps('customAlertLabels')}
                       />
@@ -731,7 +731,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
                         size="md"
                         styles={{
                           label: { fontSize: '0.95rem', fontWeight: 600, marginBottom: 8 },
-                          input: { fontFamily: 'Monaco, Consolas, monospace', fontSize: '0.9rem' }
+                          input: { fontFamily: theme.fontFamilyMonospace, fontSize: '0.9rem' }
                         }}
                         {...form.getInputProps('customAlertAnnotations')}
                       />
