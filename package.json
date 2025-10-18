@@ -32,12 +32,17 @@
     "@mantine/core": "^8.3.3",
     "@mantine/form": "^8.3.3",
     "@mantine/hooks": "^8.3.3",
+    "@observablehq/plot": "^0.6.17",
     "@tabler/icons-react": "^3.29.0",
+    "d3": "^7.9.0",
     "js-yaml": "^4.1.0",
+    "katex": "^0.16.25",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-markdown": "^10.1.0",
-    "react-router-dom": "^7.9.3"
+    "react-router-dom": "^7.9.3",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
