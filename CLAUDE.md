@@ -142,7 +142,7 @@ This component calculates Prometheus resource requirements based on user input:
   - Single source of truth for brand gradient
 - **Fonts:**
   - `fontFamily`: Fira Sans with system font fallbacks (`-apple-system`, `BlinkMacSystemFont`, `Segoe UI`, `Roboto`)
-  - `fontFamilyMonospace`: Fira Code with monospace fallbacks (`ui-monospace`, `SFMono-Regular`, `SF Mono`, `Menlo`, `Consolas`, `Liberation Mono`)
+  - `fontFamilyMonospace`: Fira Mono with monospace fallbacks (`ui-monospace`, `SFMono-Regular`, `SF Mono`, `Menlo`, `Consolas`, `Liberation Mono`)
   - Both loaded from Google Fonts in `index.html`
 - **Custom Shadows:** sm, md, lg variants
 - **Component Defaults:**
