@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on Prometheus Alert Generator</title>
+    <link>http://localhost:1313/tags/</link>
+    <description>Recent content in Tags on Prometheus Alert Generator</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 20 Jan 2025 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Alerting</title>
+      <link>http://localhost:1313/tags/alerting/</link>
+      <pubDate>Mon, 20 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/alerting/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Faq</title>
+      <link>http://localhost:1313/tags/faq/</link>
+      <pubDate>Mon, 20 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/faq/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Fundamentals</title>
+      <link>http://localhost:1313/tags/fundamentals/</link>
+      <pubDate>Mon, 20 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/fundamentals/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Slo</title>
+      <link>http://localhost:1313/tags/slo/</link>
+      <pubDate>Mon, 20 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/slo/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Burn-Rate</title>
+      <link>http://localhost:1313/tags/burn-rate/</link>
+      <pubDate>Sat, 18 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/burn-rate/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Performance</title>
+      <link>http://localhost:1313/tags/performance/</link>
+      <pubDate>Thu, 16 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/performance/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Prometheus</title>
+      <link>http://localhost:1313/tags/prometheus/</link>
+      <pubDate>Thu, 16 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/prometheus/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Technical</title>
+      <link>http://localhost:1313/tags/technical/</link>
+      <pubDate>Thu, 16 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/technical/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Monitoring</title>
+      <link>http://localhost:1313/tags/monitoring/</link>
+      <pubDate>Tue, 14 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/monitoring/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Promql</title>
+      <link>http://localhost:1313/tags/promql/</link>
+      <pubDate>Tue, 14 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/promql/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Capacity-Planning</title>
+      <link>http://localhost:1313/tags/capacity-planning/</link>
+      <pubDate>Sun, 12 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/capacity-planning/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Resources</title>
+      <link>http://localhost:1313/tags/resources/</link>
+      <pubDate>Sun, 12 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/resources/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Error-Budget</title>
+      <link>http://localhost:1313/tags/error-budget/</link>
+      <pubDate>Fri, 10 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/error-budget/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Contributing</title>
+      <link>http://localhost:1313/tags/contributing/</link>
+      <pubDate>Mon, 06 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/contributing/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Open-Source</title>
+      <link>http://localhost:1313/tags/open-source/</link>
+      <pubDate>Mon, 06 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/open-source/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Issues</title>
+      <link>http://localhost:1313/tags/issues/</link>
+      <pubDate>Sat, 04 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/issues/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Support</title>
+      <link>http://localhost:1313/tags/support/</link>
+      <pubDate>Sat, 04 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/support/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Contact</title>
+      <link>http://localhost:1313/tags/contact/</link>
+      <pubDate>Thu, 02 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/contact/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

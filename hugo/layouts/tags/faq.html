@@ -1,0 +1,52 @@
+{{ define "title" }}Frequently Asked Questions | {{ .Site.Title }}{{ end }}
+
+{{ define "main" }}
+<div class="paper">
+  <div class="content">
+    <h1>{{ partial "icon.html" (dict "name" "question-mark" "size" 32) }} Frequently Asked Questions</h1>
+    <p>Common questions about Prometheus alerting, SLO-based monitoring, and using our tools.</p>
+  </div>
+
+  <div class="blog-list">
+    {{ range .Pages }}
+      <article class="blog-item">
+        <h2 class="blog-item-title">
+          <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+        </h2>
+
+        <div class="blog-item-meta">
+          <span>
+            {{ partial "icon.html" (dict "name" "calendar" "size" 14 "class" "icon-sm") }}
+            {{ .Date.Format "January 2, 2006" }}
+          </span>
+          {{ if .Params.author }}
+          <span>&bull;</span>
+          <span>{{ .Params.author }}</span>
+          {{ end }}
+        </div>
+
+        <div class="blog-item-summary">
+          {{ .Summary }}
+        </div>
+
+        {{ if .Params.tags }}
+        <div class="tags">
+          {{ range .Params.tags }}
+            <a href="{{ "/tags/" | relLangURL }}{{ . | urlize }}" class="tag">
+              {{ partial "icon.html" (dict "name" "tag" "size" 12 "class" "icon-sm") }}
+              {{ . }}
+            </a>
+          {{ end }}
+        </div>
+        {{ end }}
+      </article>
+    {{ end }}
+  </div>
+
+  {{ if eq (len .Pages) 0 }}
+  <div class="content">
+    <p>No FAQ articles yet. Check back soon!</p>
+  </div>
+  {{ end }}
+</div>
+{{ end }}

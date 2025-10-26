@@ -1,0 +1,19 @@
+<!-- Masthead - matches React Masthead component -->
+<div class="paper masthead">
+  <h1 class="masthead-title">{{ .Site.Title }}</h1>
+  <p class="masthead-subtitle">{{ .Site.Params.description }}</p>
+
+  <!-- Navigation buttons -->
+  <nav class="masthead-nav">
+    {{ range .Site.Menus.main }}
+      <a href="{{ .URL }}" class="btn btn-light">
+        {{ .Name }}
+      </a>
+    {{ end }}
+  </nav>
+
+  <!-- Branding -->
+  <p class="masthead-branding">
+    Brought to you by <a href="{{ .Site.Params.links.cardinalityCloud }}" target="_blank" rel="noopener noreferrer">Cardinality Cloud, LLC</a>.
+  </p>
+</div>

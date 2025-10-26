@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Issues on Prometheus Alert Generator</title>
+    <link>http://localhost:1313/tags/issues/</link>
+    <description>Recent content in Issues on Prometheus Alert Generator</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 04 Jan 2025 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/issues/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>How do I report a bug or request a feature?</title>
+      <link>http://localhost:1313/blog/report-bug-request-feature/</link>
+      <pubDate>Sat, 04 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/report-bug-request-feature/</guid>
+      <description>&lt;p&gt;We use GitHub Issues to track bugs and feature requests.&lt;/p&gt;&#xA;&lt;h2 id=&#34;to-report-a-bug-or-request-a-feature&#34;&gt;To report a bug or request a feature:&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Visit our &lt;a href=&#34;https://github.com/CardinalityCloud/prometheus-alert-generator/issues&#34;&gt;Issues page&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;Search existing issues to avoid duplicates&lt;/li&gt;&#xA;&lt;li&gt;Click &amp;ldquo;New Issue&amp;rdquo; and provide detailed information&lt;/li&gt;&#xA;&lt;li&gt;For bugs: include steps to reproduce, expected vs actual behavior&lt;/li&gt;&#xA;&lt;li&gt;For features: describe the use case and desired functionality&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;Your feedback helps us improve the tool for everyone!&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

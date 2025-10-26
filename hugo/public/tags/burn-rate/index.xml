@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Burn-Rate on Prometheus Alert Generator</title>
+    <link>http://localhost:1313/tags/burn-rate/</link>
+    <description>Recent content in Burn-Rate on Prometheus Alert Generator</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 18 Jan 2025 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/burn-rate/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Why is burn rate alerting useful?</title>
+      <link>http://localhost:1313/blog/why-burn-rate-alerting-useful/</link>
+      <pubDate>Sat, 18 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/why-burn-rate-alerting-useful/</guid>
+      <description>&lt;p&gt;Burn rate alerting is a sophisticated approach to SLO monitoring that tracks how quickly you&amp;rsquo;re consuming your error budget, rather than just alerting when you&amp;rsquo;ve already exhausted it. This provides several critical advantages:&lt;/p&gt;&#xA;&lt;h2 id=&#34;early-warning-system&#34;&gt;Early Warning System&lt;/h2&gt;&#xA;&lt;p&gt;Burn rate alerts notify you when errors are occurring at a rate that will exhaust your error budget before the SLO window ends. For example, if you&amp;rsquo;re burning through error budget at 14.4x the normal rate (fast burn), you&amp;rsquo;ll exhaust a 30-day budget in just ~2 days. This gives you time to respond before user experience is significantly impacted.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

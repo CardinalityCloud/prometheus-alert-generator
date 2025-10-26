@@ -3,8 +3,6 @@ import { MantineProvider, Container, Title, TextInput, Textarea, NumberInput, Se
 import { useForm } from '@mantine/form';
 import { IconClipboardList, IconUpload, IconTarget, IconHeartbeat, IconBell, IconCopy, IconDownload } from '@tabler/icons-react';
 import * as yaml from 'js-yaml';
-import { Masthead } from './components/Masthead';
-import { Footer } from './components/Footer';
 import { InfoBox } from './components/InfoBox';
 import { theme } from './theme';
 
@@ -414,14 +412,6 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
       }}>
         <Container size="lg">
           <Stack gap="lg">
-            <Masthead
-              title="Free Prometheus Alert Rule Generator"
-              subtitle="Generate Prometheus alerting rules and SLOs for comprehensive monitoring."
-              showAlertGeneratorButton={false}
-              showResourceCalculatorButton={true}
-              showFaqButton={true}
-            />
-
           {/* Top Banner Ad Placement */}
           {enableAds && (<Paper
             p="md" 
@@ -907,8 +897,6 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
               </div>
             </Paper>
           )}
-
-          <Footer />
         </Stack>
       </Container>
       </div>

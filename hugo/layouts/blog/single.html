@@ -1,0 +1,66 @@
+{{ define "title" }}{{ .Title }} | {{ .Site.Title }}{{ end }}
+
+{{ define "main" }}
+<article class="paper">
+  <div class="content">
+    <h1>{{ .Title }}</h1>
+
+    <!-- Article metadata -->
+    <div class="article-meta">
+      <div class="article-meta-item">
+        {{ partial "icon.html" (dict "name" "calendar" "size" 16 "class" "icon-sm") }}
+        <span>{{ .Date.Format "January 2, 2006" }}</span>
+      </div>
+
+      {{ if .Params.author }}
+      <div class="article-meta-item">
+        <span>{{ .Params.author }}</span>
+      </div>
+      {{ end }}
+
+      {{ if .ReadingTime }}
+      <div class="article-meta-item">
+        {{ partial "icon.html" (dict "name" "clock" "size" 16 "class" "icon-sm") }}
+        <span>{{ .ReadingTime }} min read</span>
+      </div>
+      {{ end }}
+    </div>
+
+    <!-- Article content -->
+    {{ .Content }}
+
+    <!-- Tags -->
+    {{ if .Params.tags }}
+    <div class="tags">
+      {{ range .Params.tags }}
+        <a href="{{ "/tags/" | relLangURL }}{{ . | urlize }}" class="tag">
+          {{ partial "icon.html" (dict "name" "tag" "size" 12 "class" "icon-sm") }}
+          {{ . }}
+        </a>
+      {{ end }}
+    </div>
+    {{ end }}
+  </div>
+</article>
+
+<!-- Related articles or navigation -->
+{{ if or .NextInSection .PrevInSection }}
+<div class="paper">
+  <div class="content">
+    <h3>More Articles</h3>
+    <div style="display: flex; justify-content: space-between; gap: var(--spacing-md);">
+      {{ if .PrevInSection }}
+      <div>
+        <a href="{{ .PrevInSection.RelPermalink }}">&larr; {{ .PrevInSection.Title }}</a>
+      </div>
+      {{ end }}
+      {{ if .NextInSection }}
+      <div style="text-align: right;">
+        <a href="{{ .NextInSection.RelPermalink }}">{{ .NextInSection.Title }} &rarr;</a>
+      </div>
+      {{ end }}
+    </div>
+  </div>
+</div>
+{{ end }}
+{{ end }}

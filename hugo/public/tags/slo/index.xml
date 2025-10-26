@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Slo on Prometheus Alert Generator</title>
+    <link>http://localhost:1313/tags/slo/</link>
+    <description>Recent content in Slo on Prometheus Alert Generator</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 20 Jan 2025 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/slo/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>What is an SLO and why should I use SLO-based alerts?</title>
+      <link>http://localhost:1313/blog/what-is-slo-why-slo-based-alerts/</link>
+      <pubDate>Mon, 20 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/what-is-slo-why-slo-based-alerts/</guid>
+      <description>&lt;p&gt;An SLO (Service Level Objective) is a target reliability goal for your service, expressed as a percentage (e.g., 99.9% uptime). SLOs define the level of reliability your users can expect and help you balance reliability with development velocity.&lt;/p&gt;&#xA;&lt;p&gt;SLO-based alerting has several advantages over traditional threshold-based alerting:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;User-centric&lt;/strong&gt;: Focuses on user-facing reliability rather than arbitrary infrastructure thresholds&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;Context-aware&lt;/strong&gt;: Uses multi-window burn rate detection to alert on issues at the right time and severity&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;Reduces noise&lt;/strong&gt;: Only alerts when error budget is meaningfully at risk, dramatically reducing alert fatigue&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;Business alignment&lt;/strong&gt;: Helps balance reliability investments with feature development velocity&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;Early warning system&lt;/strong&gt;: Detects problems before you exhaust your error budget&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;learn-more&#34;&gt;Learn More&lt;/h2&gt;&#xA;&lt;p&gt;The foundational concepts are covered in the Google SRE books:&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Why is burn rate alerting useful?</title>
+      <link>http://localhost:1313/blog/why-burn-rate-alerting-useful/</link>
+      <pubDate>Sat, 18 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/why-burn-rate-alerting-useful/</guid>
+      <description>&lt;p&gt;Burn rate alerting is a sophisticated approach to SLO monitoring that tracks how quickly you&amp;rsquo;re consuming your error budget, rather than just alerting when you&amp;rsquo;ve already exhausted it. This provides several critical advantages:&lt;/p&gt;&#xA;&lt;h2 id=&#34;early-warning-system&#34;&gt;Early Warning System&lt;/h2&gt;&#xA;&lt;p&gt;Burn rate alerts notify you when errors are occurring at a rate that will exhaust your error budget before the SLO window ends. For example, if you&amp;rsquo;re burning through error budget at 14.4x the normal rate (fast burn), you&amp;rsquo;ll exhaust a 30-day budget in just ~2 days. This gives you time to respond before user experience is significantly impacted.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Understanding SLO-Based Alerting</title>
+      <link>http://localhost:1313/blog/understanding-slo-based-alerting/</link>
+      <pubDate>Wed, 15 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/understanding-slo-based-alerting/</guid>
+      <description>&lt;p&gt;Service Level Objective (SLO) based alerting is a powerful approach to monitoring that focuses on user-impacting reliability issues rather than arbitrary thresholds.&lt;/p&gt;&#xA;&lt;h2 id=&#34;what-is-an-slo&#34;&gt;What is an SLO?&lt;/h2&gt;&#xA;&lt;p&gt;An SLO is a target reliability level for a service, expressed as a percentage. For example, a 99.9% availability SLO means your service should be available 99.9% of the time over a given period.&lt;/p&gt;&#xA;&lt;h2 id=&#34;why-slo-based-alerting&#34;&gt;Why SLO-Based Alerting?&lt;/h2&gt;&#xA;&lt;p&gt;Traditional alerting often uses static thresholds like &amp;ldquo;alert if error rate &amp;gt; 5%&amp;rdquo;. This approach has problems:&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>What is an Error Budget?</title>
+      <link>http://localhost:1313/blog/what-is-error-budget/</link>
+      <pubDate>Fri, 10 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/blog/what-is-error-budget/</guid>
+      <description>&lt;p&gt;An error budget is the amount of unreliability your service can tolerate while still meeting your SLO.&lt;/p&gt;&#xA;&lt;h2 id=&#34;the-math&#34;&gt;The Math&lt;/h2&gt;&#xA;&lt;p&gt;If your SLO is 99.9% availability over 30 days:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;Target uptime&lt;/strong&gt;: 99.9% = 43,156 minutes&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;Allowed downtime&lt;/strong&gt;: 0.1% = 43.2 minutes per month&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;Error budget&lt;/strong&gt;: Those 43.2 minutes&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;why-error-budgets-matter&#34;&gt;Why Error Budgets Matter&lt;/h2&gt;&#xA;&lt;p&gt;Error budgets create a shared language between engineering and product teams:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;100% reliability is impossible&lt;/strong&gt; (and wasteful to pursue)&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;Error budget = innovation budget&lt;/strong&gt;: Spend it on new features, experiments, or controlled risks&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;When budget is low&lt;/strong&gt;: Focus on stability and reliability improvements&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;When budget is healthy&lt;/strong&gt;: Ship faster and take calculated risks&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;burn-rate&#34;&gt;Burn Rate&lt;/h2&gt;&#xA;&lt;p&gt;&lt;strong&gt;Burn rate&lt;/strong&gt; measures how quickly you&amp;rsquo;re consuming your error budget:&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

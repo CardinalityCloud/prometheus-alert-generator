@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Container, Paper, Stack, NumberInput, Button, Card, Text, Group, Badge } from '@mantine/core';
 import * as Plot from '@observablehq/plot';
-import { Masthead } from './components/Masthead';
-import { Footer } from './components/Footer';
 import { InfoBox } from './components/InfoBox';
 import { theme } from './theme';
 
@@ -212,14 +210,6 @@ export function ResourceCalculator() {
     }}>
       <Container size="lg">
         <Stack gap="lg">
-          <Masthead
-            title="Prometheus Resource Calculator"
-            subtitle="Calculate memory, CPU, and disk requirements for your Prometheus deployment."
-            showAlertGeneratorButton={true}
-            showResourceCalculatorButton={false}
-            showFaqButton={true}
-          />
-
           <Paper shadow="md" p="xl" withBorder radius="lg" style={{ background: 'white' }}>
             <Stack gap="md">
               <div>
@@ -381,8 +371,6 @@ export function ResourceCalculator() {
               </Card>
             </Stack>
           </Paper>
-
-          <Footer />
         </Stack>
       </Container>
     </div>
