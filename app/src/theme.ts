@@ -1,6 +1,6 @@
 import { createTheme } from '@mantine/core';
 import type { MantineColorsTuple } from '@mantine/core';
-import tokens from '../shared/design-tokens.json';
+import tokens from '../../shared/design-tokens.json';
 
 // Convert design tokens to Mantine color tuple
 const purpleColor: MantineColorsTuple = [
