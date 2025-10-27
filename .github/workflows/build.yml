@@ -40,8 +40,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: app/package-lock.json
 
       - name: Install Hugo
         run: |
@@ -50,21 +48,11 @@ jobs:
           sudo mv ${{ runner.temp }}/hugo /usr/local/bin/
           hugo version
 
-      - name: Install React app dependencies
-        working-directory: app
-        run: npm ci
-
-      - name: Build React app
-        working-directory: app
-        run: npm run build
+      - name: Build site
+        run: ./build.sh
         env:
           VITE_GIT_COMMIT_SHA: ${{ github.sha }}
           VITE_BUILD_DATE: ${{ github.event.head_commit.timestamp }}
-
-      - name: Build Hugo site
-        working-directory: hugo
-        run: hugo --minify
-        env:
           HUGO_ENV: production
 
       - name: configure aws credentials
