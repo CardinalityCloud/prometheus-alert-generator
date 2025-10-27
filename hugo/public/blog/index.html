@@ -49,11 +49,11 @@
   
   <nav class="masthead-nav">
     
-      <a href="/app/" class="btn btn-light">
+      <a href="/pag/" class="btn btn-light">
         Alert Generator
       </a>
     
-      <a href="/app/resources" class="btn btn-light">
+      <a href="/prc/" class="btn btn-light">
         Resource Calculator
       </a>
     
@@ -137,23 +137,14 @@
   <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
   <path d="M12 7v5l3 3" />
 </svg>
-            1 min read
+            8 min read
           </span>
           
         </div>
 
         <div class="blog-item-summary">
-          <p>An SLO (Service Level Objective) is a target reliability goal for your service, expressed as a percentage (e.g., 99.9% uptime). SLOs define the level of reliability your users can expect and help you balance reliability with development velocity.</p>
-<p>SLO-based alerting has several advantages over traditional threshold-based alerting:</p>
-<ul>
-<li><strong>User-centric</strong>: Focuses on user-facing reliability rather than arbitrary infrastructure thresholds</li>
-<li><strong>Context-aware</strong>: Uses multi-window burn rate detection to alert on issues at the right time and severity</li>
-<li><strong>Reduces noise</strong>: Only alerts when error budget is meaningfully at risk, dramatically reducing alert fatigue</li>
-<li><strong>Business alignment</strong>: Helps balance reliability investments with feature development velocity</li>
-<li><strong>Early warning system</strong>: Detects problems before you exhaust your error budget</li>
-</ul>
-<h2 id="learn-more">Learn More</h2>
-<p>The foundational concepts are covered in the Google SRE books:</p>
+          <p>An SLO (Service Level Objective) is a target reliability goal for your service, expressed as a percentage over a specific time window. For example, &ldquo;99.9% of requests should complete successfully over the last 30 days&rdquo; or &ldquo;99.95% of API requests should return within 500ms over the last 7 days.&rdquo;</p>
+<p>SLOs are the cornerstone of Site Reliability Engineering (SRE) practices. They define the level of reliability your users can expect and provide a quantitative framework for balancing reliability investments with feature development velocity.</p>
         </div>
 
         

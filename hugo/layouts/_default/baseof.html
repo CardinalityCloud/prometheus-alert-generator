@@ -18,9 +18,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&amp;family=Fira+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
 
   <!-- Stylesheets -->
-  {{ $tokens := resources.Get "css/tokens.css" }}
+  {{ $bootstrap := resources.Get "css/bootstrap.css" }}
   {{ $main := resources.Get "css/main.css" }}
-  {{ $styles := slice $tokens $main | resources.Concat "css/bundle.css" }}
+  {{ $styles := slice $bootstrap $main | resources.Concat "css/bundle.css" }}
   {{ if hugo.IsProduction }}
     {{ $styles = $styles | minify | fingerprint }}
   {{ end }}

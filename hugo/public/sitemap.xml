@@ -102,6 +102,8 @@
   </url><url>
     <loc>http://localhost:1313/faq/</loc>
   </url><url>
-    <loc>http://localhost:1313/app/</loc>
+    <loc>http://localhost:1313/pag/</loc>
+  </url><url>
+    <loc>http://localhost:1313/prc/</loc>
   </url>
 </urlset>

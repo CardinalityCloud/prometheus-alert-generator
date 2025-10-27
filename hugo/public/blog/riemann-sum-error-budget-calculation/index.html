@@ -53,11 +53,11 @@
   
   <nav class="masthead-nav">
     
-      <a href="/app/" class="btn btn-light">
+      <a href="/pag/" class="btn btn-light">
         Alert Generator
       </a>
     
-      <a href="/app/resources" class="btn btn-light">
+      <a href="/prc/" class="btn btn-light">
         Resource Calculator
       </a>
     
@@ -176,10 +176,8 @@
 </div>
 </div><h2 id="why-this-works-the-math">Why This Works: The Math</h2>
 <p>This technique is inspired by Riemann Sums from calculus. The error budget consumed over a time period is:</p>
-<p>$$\int_0^T \text{error_rate}(t) , dt , / , \int_0^T \text{total_rate}(t) , dt$$</p>
-<p>By sampling the error ratio at regular intervals (every evaluation, typically 1m), we&rsquo;re approximating this integral as:</p>
-<p>$$\frac{1}{n} \times \sum_{i=1}^{n} \frac{\text{error_rate}(t_i)}{\text{total_rate}(t_i)}$$</p>
-<p>This is exactly what <code>avg_over_time(job:slo_burn:ratio_5m[30d])</code> computes - it takes the average of all 5-minute error ratio samples over the 30-day window. The 5-minute window smooths out instantaneous spikes while the evaluation interval (1m) ensures we sample frequently enough to capture meaningful changes.</p>
+$$\int_0^T \text{error\_rate}(t) \, dt \, / \, \int_0^T \text{total\_rate}(t) \, dt$$<p>By sampling the error ratio at regular intervals (every evaluation, typically 1m), we&rsquo;re approximating this integral as:</p>
+$$\frac{1}{n} \times \sum_{i=1}^{n} \frac{\text{error\_rate}(t_i)}{\text{total\_rate}(t_i)}$$<p>This is exactly what <code>avg_over_time(job:slo_burn:ratio_5m[30d])</code> computes - it takes the average of all 5-minute error ratio samples over the 30-day window. The 5-minute window smooths out instantaneous spikes while the evaluation interval (1m) ensures we sample frequently enough to capture meaningful changes.</p>
 <h2 id="key-advantages">Key Advantages</h2>
 <ul>
 <li><strong>Performance</strong>: Queries only pre-computed recording rule samples, not raw metrics</li>

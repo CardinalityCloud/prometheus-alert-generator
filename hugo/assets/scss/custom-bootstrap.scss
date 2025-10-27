@@ -1,0 +1,189 @@
+// Custom Bootstrap Theme with Design Tokens
+// Based on design-tokens.json
+
+// 1. Include functions first (so you can manipulate colors, SVGs, calc, etc)
+@import "../../node_modules/bootstrap/scss/functions";
+
+// 2. Include any default variable overrides here
+
+// Purple color scale from design-tokens.json
+$purple-0: #f3f0ff;
+$purple-1: #e5dbff;
+$purple-2: #d0bfff;
+$purple-3: #b197fc;
+$purple-4: #9775fa;
+$purple-5: #667eea;
+$purple-6: #7265d4;
+$purple-7: #764ba2;
+$purple-8: #5f3a7d;
+$purple-9: #4a2c5f;
+
+// Bootstrap color system overrides
+$primary: $purple-5;
+$secondary: $purple-7;
+
+// Body and text
+$body-color: #212529;
+$body-bg: #ffffff;
+
+// Fonts from design-tokens.json
+$font-family-sans-serif: "Fira Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+$font-family-monospace: "Fira Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+$font-family-base: $font-family-sans-serif;
+
+// Spacing from design-tokens.json
+// Bootstrap uses a $spacer base value and multiplies it
+// We'll map our tokens to Bootstrap's spacing scale
+$spacer: 1rem; // md token
+$spacers: (
+  0: 0,
+  1: 0.625rem,  // xs: 0.625rem
+  2: 0.75rem,   // sm: 0.75rem
+  3: 1rem,      // md: 1rem (default)
+  4: 1.25rem,   // lg: 1.25rem
+  5: 2rem,      // xl: 2rem
+);
+
+// Border radius from design-tokens.json
+$border-radius-sm: 0.125rem;  // xs
+$border-radius: 0.5rem;       // md
+$border-radius-lg: 1rem;      // lg
+$border-radius-xl: 2rem;      // xl
+$border-radius-pill: 50rem;
+
+// Shadows from design-tokens.json
+$box-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+$box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+$box-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+// Component specific overrides
+$btn-border-radius: 0.5rem;
+$btn-border-radius-sm: 0.25rem;
+$btn-border-radius-lg: 1rem;
+
+$card-border-radius: 0.5rem;
+$card-box-shadow: $box-shadow-sm;
+
+// Link colors
+$link-color: $primary;
+$link-hover-color: $purple-7;
+
+// 3. Include remainder of required Bootstrap stylesheets
+@import "../../node_modules/bootstrap/scss/variables";
+@import "../../node_modules/bootstrap/scss/variables-dark";
+
+// 4. Include any default map overrides here
+$theme-colors: (
+  "primary": $primary,
+  "secondary": $secondary,
+  "purple-0": $purple-0,
+  "purple-1": $purple-1,
+  "purple-2": $purple-2,
+  "purple-3": $purple-3,
+  "purple-4": $purple-4,
+  "purple-5": $purple-5,
+  "purple-6": $purple-6,
+  "purple-7": $purple-7,
+  "purple-8": $purple-8,
+  "purple-9": $purple-9,
+);
+
+// 5. Include remainder of required parts
+@import "../../node_modules/bootstrap/scss/maps";
+@import "../../node_modules/bootstrap/scss/mixins";
+@import "../../node_modules/bootstrap/scss/root";
+
+// 6. Optionally include any other parts as needed
+@import "../../node_modules/bootstrap/scss/utilities";
+@import "../../node_modules/bootstrap/scss/reboot";
+@import "../../node_modules/bootstrap/scss/type";
+@import "../../node_modules/bootstrap/scss/images";
+@import "../../node_modules/bootstrap/scss/containers";
+@import "../../node_modules/bootstrap/scss/grid";
+@import "../../node_modules/bootstrap/scss/tables";
+@import "../../node_modules/bootstrap/scss/forms";
+@import "../../node_modules/bootstrap/scss/buttons";
+@import "../../node_modules/bootstrap/scss/transitions";
+@import "../../node_modules/bootstrap/scss/dropdown";
+@import "../../node_modules/bootstrap/scss/button-group";
+@import "../../node_modules/bootstrap/scss/nav";
+@import "../../node_modules/bootstrap/scss/navbar";
+@import "../../node_modules/bootstrap/scss/card";
+@import "../../node_modules/bootstrap/scss/accordion";
+@import "../../node_modules/bootstrap/scss/breadcrumb";
+@import "../../node_modules/bootstrap/scss/pagination";
+@import "../../node_modules/bootstrap/scss/badge";
+@import "../../node_modules/bootstrap/scss/alert";
+@import "../../node_modules/bootstrap/scss/progress";
+@import "../../node_modules/bootstrap/scss/list-group";
+@import "../../node_modules/bootstrap/scss/close";
+@import "../../node_modules/bootstrap/scss/toasts";
+@import "../../node_modules/bootstrap/scss/modal";
+@import "../../node_modules/bootstrap/scss/tooltip";
+@import "../../node_modules/bootstrap/scss/popover";
+@import "../../node_modules/bootstrap/scss/carousel";
+@import "../../node_modules/bootstrap/scss/spinners";
+@import "../../node_modules/bootstrap/scss/offcanvas";
+@import "../../node_modules/bootstrap/scss/placeholders";
+
+// 7. Optionally include utilities API last to generate classes based on the Sass map in `_utilities.scss`
+@import "../../node_modules/bootstrap/scss/helpers";
+@import "../../node_modules/bootstrap/scss/utilities/api";
+
+// 8. Add custom styles and design token utilities
+
+// Gradient utility (from design-tokens.json)
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.text-gradient-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+// Custom CSS variables for compatibility with existing token system
+:root {
+  // Purple color scale
+  --color-purple-0: #{$purple-0};
+  --color-purple-1: #{$purple-1};
+  --color-purple-2: #{$purple-2};
+  --color-purple-3: #{$purple-3};
+  --color-purple-4: #{$purple-4};
+  --color-purple-5: #{$purple-5};
+  --color-purple-6: #{$purple-6};
+  --color-purple-7: #{$purple-7};
+  --color-purple-8: #{$purple-8};
+  --color-purple-9: #{$purple-9};
+
+  // Primary color
+  --color-primary: #{$primary};
+
+  // Gradient
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+  // Typography
+  --font-family: #{$font-family-sans-serif};
+  --font-family-mono: #{$font-family-monospace};
+
+  // Spacing
+  --spacing-xs: 0.625rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.25rem;
+  --spacing-xl: 2rem;
+
+  // Border radius
+  --radius-xs: #{$border-radius-sm};
+  --radius-sm: 0.25rem;
+  --radius-md: #{$border-radius};
+  --radius-lg: #{$border-radius-lg};
+  --radius-xl: #{$border-radius-xl};
+
+  // Shadows
+  --shadow-sm: #{$box-shadow-sm};
+  --shadow-md: #{$box-shadow};
+  --shadow-lg: #{$box-shadow-lg};
+}

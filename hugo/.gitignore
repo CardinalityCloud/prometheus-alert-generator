@@ -1,0 +1,7 @@
+# Hugo build outputs
+/public/
+/resources/_gen/
+
+# Compiled Bootstrap CSS (generated from SCSS)
+assets/css/bootstrap.css
+assets/css/bootstrap.css.map

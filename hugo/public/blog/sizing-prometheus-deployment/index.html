@@ -53,11 +53,11 @@
   
   <nav class="masthead-nav">
     
-      <a href="/app/" class="btn btn-light">
+      <a href="/pag/" class="btn btn-light">
         Alert Generator
       </a>
     
-      <a href="/app/resources" class="btn btn-light">
+      <a href="/prc/" class="btn btn-light">
         Resource Calculator
       </a>
     
@@ -167,8 +167,7 @@
 <h2 id="resource-calculations">Resource Calculations</h2>
 <h3 id="memory-requirements">Memory Requirements</h3>
 <p>Prometheus memory usage scales linearly with active time series:</p>
-<p>$$\text{Memory (GB)} = \frac{\text{time_series} \times 7.5 \text{ KiB}}{1024^2}$$</p>
-<ul>
+$$\text{Memory (GB)} = \frac{\text{time\_series} \times 7.5 \text{ KiB}}{1024^2}$$<ul>
 <li><strong>Recommended</strong>: 7.5 KiB per time series</li>
 <li><strong>Safe Range</strong>: 7-9 KiB per time series</li>
 </ul>
@@ -180,8 +179,7 @@
 </ul>
 <h3 id="cpu-requirements">CPU Requirements</h3>
 <p>CPU usage is harder to predict as it depends on query complexity, but a general rule:</p>
-<p>$$\text{CPU Cores} = \max\left(2, \left\lfloor\frac{\text{Memory (GB)}}{4}\right\rfloor\right)$$</p>
-<p>Allocate 1 core per 4GB of memory, with a minimum of 2 cores. CPU load increases with:</p>
+$$\text{CPU Cores} = \max\left(2, \left\lfloor\frac{\text{Memory (GB)}}{4}\right\rfloor\right)$$<p>Allocate 1 core per 4GB of memory, with a minimum of 2 cores. CPU load increases with:</p>
 <ul>
 <li><strong>Recording rules</strong>: Pre-computing aggregations</li>
 <li><strong>Alert rule evaluations</strong>: Complex PromQL queries</li>
@@ -189,10 +187,8 @@
 </ul>
 <h3 id="disk-space-requirements">Disk Space Requirements</h3>
 <p>Disk usage depends on retention period and sample density:</p>
-<p>$$\text{Disk (GB)} = \frac{\text{time_series} \times \text{samples_per_series} \times 1.5 \text{ bytes}}{1024^3} \times 1.2$$</p>
-<p>Where:</p>
-<p>$$\text{samples_per_series} = \frac{\text{retention_days} \times 86400}{\text{scrape_interval}}$$</p>
-<ul>
+$$\text{Disk (GB)} = \frac{\text{time\_series} \times \text{samples\_per\_series} \times 1.5 \text{ bytes}}{1024^3} \times 1.2$$<p>Where:</p>
+$$\text{samples\_per\_series} = \frac{\text{retention\_days} \times 86400}{\text{scrape\_interval}}$$<ul>
 <li><strong>1.5 bytes per sample</strong>: Prometheus&rsquo;s efficient compression based on the <a href="http://www.vldb.org/pvldb/vol8/p1816-teller.pdf">Gorilla compression algorithm</a> from Facebook</li>
 <li><strong>1.2x multiplier</strong>: 20% overhead for WAL (Write-Ahead Log) and temporary data</li>
 </ul>

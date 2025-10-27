@@ -1,5 +1,13 @@
 {
   "dependencies": {
     "bootstrap": "^5.3.8"
+  },
+  "devDependencies": {
+    "sass": "^1.93.2"
+  },
+  "scripts": {
+    "build:css": "sass assets/scss/custom-bootstrap.scss:assets/css/bootstrap.css --style=compressed --no-source-map",
+    "watch:css": "sass assets/scss/custom-bootstrap.scss:assets/css/bootstrap.css --watch --style=expanded --source-map",
+    "dev": "npm run watch:css"
   }
 }

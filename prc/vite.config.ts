@@ -4,9 +4,9 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/app/',  // Important: base path for assets
+  base: '/prc/',  // Important: base path for assets
   build: {
-    outDir: '../hugo/static/app',  // Build directly into Hugo
+    outDir: '../hugo/static/prc',  // Build directly into Hugo
     emptyOutDir: true,
   },
   define: {

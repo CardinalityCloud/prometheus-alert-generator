@@ -14,11 +14,11 @@ enableEmoji = true
 [menu]
   [[menu.main]]
     name = 'Alert Generator'
-    url = '/app/'
+    url = '/pag/'
     weight = 10
   [[menu.main]]
     name = 'Resource Calculator'
-    url = '/app/resources'
+    url = '/prc/'
     weight = 20
   [[menu.main]]
     name = 'Blog'
@@ -57,6 +57,12 @@ enableEmoji = true
   [markup.goldmark]
     [markup.goldmark.renderer]
       unsafe = true
+    [markup.goldmark.extensions]
+      [markup.goldmark.extensions.passthrough]
+        enable = true
+        [markup.goldmark.extensions.passthrough.delimiters]
+          block = [['\[\[', '\]\]'], ['$$', '$$']]
+          inline = [['\(', '\)'], ['$', '$']]
   [markup.highlight]
     style = 'monokai'
     lineNos = true

@@ -28,15 +28,15 @@
 
   <!-- React App CSS and JS -->
   {{- /* Find the built React app assets dynamically */ -}}
-  {{- $appAssets := readDir "static/app/assets" -}}
+  {{- $appAssets := readDir "static/prc/assets" -}}
   {{- range $appAssets -}}
     {{- if strings.HasSuffix .Name ".css" -}}
-  <link rel="stylesheet" crossorigin href="/app/assets/{{ .Name }}">
+  <link rel="stylesheet" crossorigin href="/prc/assets/{{ .Name }}">
     {{- end -}}
   {{- end -}}
   {{- range $appAssets -}}
     {{- if strings.HasSuffix .Name ".js" -}}
-  <script type="module" crossorigin src="/app/assets/{{ .Name }}"></script>
+  <script type="module" crossorigin src="/prc/assets/{{ .Name }}"></script>
     {{- end -}}
   {{- end -}}
 
