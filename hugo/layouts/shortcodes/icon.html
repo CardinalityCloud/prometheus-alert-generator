@@ -1,0 +1,8 @@
+{{- /* Icon Shortcode - Renders Tabler Icons as inline SVG in markdown content */ -}}
+{{- /* Parameters: name (required), size (optional, default 18), class (optional, default "icon") */ -}}
+
+{{- $name := .Get 0 -}}
+{{- $size := .Get 1 | default 18 -}}
+{{- $class := .Get 2 | default "icon" -}}
+
+{{- partial "icon.html" (dict "name" $name "size" $size "class" $class) -}}

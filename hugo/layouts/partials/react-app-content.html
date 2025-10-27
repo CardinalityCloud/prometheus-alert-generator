@@ -1,0 +1,12 @@
+<!-- Optional page introduction (only rendered if content exists) -->
+{{- if .Content -}}
+{{- $content := .Content | strings.TrimSpace -}}
+{{- if $content -}}
+<div class="paper content">
+  {{ .Content }}
+</div>
+{{- end -}}
+{{- end -}}
+
+<!-- React App Root -->
+<div class="paper" id="root"></div>

@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "bootstrap": "^5.3.8"
+  },
+  "devDependencies": {
+    "sass": "^1.93.2"
+  },
+  "scripts": {
+    "build:css": "sass assets/scss/custom-bootstrap.scss:assets/css/bootstrap.css --style=compressed --no-source-map --silence-deprecation=import --silence-deprecation=global-builtin --silence-deprecation=color-functions",
+    "watch:css": "sass assets/scss/custom-bootstrap.scss:assets/css/bootstrap.css --watch --style=expanded --source-map --silence-deprecation=import --silence-deprecation=global-builtin --silence-deprecation=color-functions",
+    "dev": "npm run watch:css"
+  }
+}

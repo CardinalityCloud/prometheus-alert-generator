@@ -1,0 +1,33 @@
+{{- /*
+  Icon Partial - Renders Tabler Icons as inline SVG
+
+  Usage in templates:
+    {{ partial "icon.html" (dict "name" "brand-github" "size" 18) }}
+    {{ partial "icon.html" (dict "name" "mail" "size" 24 "class" "custom-class") }}
+
+  Parameters:
+    - name: Icon name from Tabler Icons (required) - e.g., "brand-github", "mail", "bug"
+    - size: Icon size in pixels (default: 18)
+    - class: Additional CSS classes (default: "icon")
+
+  Note: Icon SVG files are in assets/icons/ directory
+*/ -}}
+
+{{- $name := .name -}}
+{{- $size := .size | default 18 -}}
+{{- $class := .class | default "icon" -}}
+{{- $iconPath := printf "icons/%s.svg" $name -}}
+
+{{- with resources.Get $iconPath -}}
+  {{- $svg := .Content | safeHTML -}}
+  {{- $svg = replace $svg "<svg" (printf "<svg class=\"%s\" width=\"%d\" height=\"%d\"" $class $size $size) -}}
+  {{- $svg | safeHTML -}}
+{{- else -}}
+  <!-- Icon not found: {{ $name }} at {{ $iconPath }} -->
+  <svg class="{{ $class }}" width="{{ $size }}" height="{{ $size }}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <path d="M9 9h.01"></path>
+    <path d="M15 9h.01"></path>
+    <path d="M9.5 15.25a3.5 3.5 0 0 1 5 0"></path>
+  </svg>
+{{- end -}}

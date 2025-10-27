@@ -1,0 +1,72 @@
+baseURL = 'https://prometheus-alert-generator.com/'
+languageCode = 'en-us'
+title = 'Prometheus Alert Generator'
+
+# Google Analytics
+googleAnalytics = 'G-QFVX8S2N60'
+
+# Enable emoji support
+enableEmoji = true
+
+# Configure taxonomies (tags for FAQ filtering)
+[taxonomies]
+  tag = 'tags'
+  category = 'categories'
+
+# Main menu
+[menu]
+  [[menu.main]]
+    name = 'Alert Generator'
+    url = '/pag/'
+    weight = 10
+  [[menu.main]]
+    name = 'Resource Calculator'
+    url = '/prc/'
+    weight = 20
+  [[menu.main]]
+    name = 'Blog'
+    url = '/blog/'
+    weight = 30
+  [[menu.main]]
+    name = 'FAQ'
+    url = '/faq/'
+    weight = 40
+
+# Params for templates
+[params]
+  description = 'Free web-based tools for Prometheus monitoring: SLO-based alert rule generator and resource calculator'
+  author = 'Cardinality Cloud, LLC'
+  github = 'https://github.com/CardinalityCloud/prometheus-alert-generator'
+  email = 'jjneely@cardinality.cloud'
+
+  # Version info (can be overridden at build time via environment variables)
+  version = '0.1.0'
+  gitCommit = 'dev'
+  buildDate = 'development'
+
+  # Footer params
+  copyright = '2025 Cardinality Cloud, LLC'
+  license = 'Apache 2.0'
+
+  # Social/external links
+  [params.links]
+    cardinalityCloud = 'https://cardinality.cloud/'
+    blog = 'https://cardinality.cloud/blog/'
+    github = 'https://github.com/CardinalityCloud/prometheus-alert-generator'
+    issues = 'https://github.com/CardinalityCloud/prometheus-alert-generator/issues'
+
+# Markup configuration for markdown
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+    [markup.goldmark.extensions]
+      [markup.goldmark.extensions.passthrough]
+        enable = true
+        [markup.goldmark.extensions.passthrough.delimiters]
+          block = [['\[\[', '\]\]'], ['$$', '$$']]
+          inline = [['\(', '\)'], ['$', '$']]
+  [markup.highlight]
+    style = 'monokai'
+    lineNos = true
+    lineNumbersInTable = false
