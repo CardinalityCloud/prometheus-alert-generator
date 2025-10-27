@@ -1,53 +1,41 @@
-import { Paper, useMantineTheme } from '@mantine/core';
-import type { PaperProps, MantineColor } from '@mantine/core';
+import { Card } from 'react-bootstrap';
 
-export interface InfoBoxProps extends PaperProps {
-  /** Color from theme (defaults to primary) */
-  color?: MantineColor;
-  /** Variant for future use (currently only 'info' is implemented) */
-  variant?: 'info' | 'success' | 'warning' | 'error';
+export interface InfoBoxProps {
+  /** Variant for Bootstrap styling */
+  variant?: 'info' | 'success' | 'warning' | 'danger' | 'primary' | 'secondary';
   /** Children elements */
   children?: React.ReactNode;
+  /** Additional CSS classes */
+  className?: string;
+  /** Inline styles */
+  style?: React.CSSProperties;
 }
 
 /**
- * InfoBox - A consistent styled Paper component for displaying important information
+ * InfoBox - A consistent styled Card component for displaying important information
  *
  * Usage:
  * ```tsx
  * <InfoBox>
- *   <Text>Your content here</Text>
+ *   <div>Your content here</div>
  * </InfoBox>
  * ```
  */
 export function InfoBox({
-  color,
   variant = 'info',
   children,
+  className,
   style,
-  ...props
 }: InfoBoxProps) {
-  const theme = useMantineTheme();
-
-  // Use primary color if no color specified
-  const effectiveColor = color || theme.primaryColor;
-
-  // Get color shades from theme
-  const backgroundColor = theme.colors[effectiveColor][0]; // Lightest
-  const borderColor = theme.colors[effectiveColor][5]; // Medium (brand color)
-
   return (
-    <Paper
-      p="md"
-      withBorder
-      style={{
-        backgroundColor,
-        borderColor,
-        ...style,
-      }}
-      {...props}
+    <Card
+      border={variant}
+      className={className}
+      style={style}
     >
-      {children}
-    </Paper>
+      <Card.Body>
+        {children}
+      </Card.Body>
+    </Card>
   );
 }
