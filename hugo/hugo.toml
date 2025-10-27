@@ -2,6 +2,9 @@ baseURL = 'https://prometheus-alert-generator.com/'
 languageCode = 'en-us'
 title = 'Prometheus Alert Generator'
 
+# Google Analytics
+googleAnalytics = 'G-QFVX8S2N60'
+
 # Enable emoji support
 enableEmoji = true
 
