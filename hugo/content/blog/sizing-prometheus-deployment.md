@@ -1,6 +1,6 @@
 ---
 title: "How do I size my Prometheus deployment?"
-date: 2025-01-12
+date: 2025-10-12
 author: "Cardinality Cloud"
 tags: ["faq", "prometheus", "capacity-planning", "resources"]
 description: "Comprehensive guide to calculating memory, CPU, and disk requirements for Prometheus."

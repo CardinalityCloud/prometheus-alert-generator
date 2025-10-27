@@ -1,6 +1,6 @@
 ---
 title: "How do I contact Cardinality Cloud?"
-date: 2025-01-02
+date: 2025-10-02
 author: "Cardinality Cloud"
 tags: ["faq", "contact", "support"]
 description: "Contact information for Cardinality Cloud."

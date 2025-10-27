@@ -1,6 +1,6 @@
 ---
 title: "How does this tool efficiently calculate error budget over long SLO windows?"
-date: 2025-01-16
+date: 2025-10-16
 author: "Cardinality Cloud"
 tags: ["faq", "technical", "prometheus", "performance"]
 description: "Deep dive into the Riemann Sum-inspired technique for efficient error budget calculations."

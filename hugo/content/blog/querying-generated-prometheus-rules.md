@@ -1,6 +1,6 @@
 ---
 title: "How do I query these generated rules in Prometheus to monitor my application?"
-date: 2025-01-14
+date: 2025-10-14
 author: "Cardinality Cloud"
 tags: ["faq", "prometheus", "promql", "monitoring"]
 description: "Practical guide to querying the generated SLO recording rules in Prometheus."

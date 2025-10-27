@@ -1,6 +1,6 @@
 ---
 title: "How do I contribute to this project?"
-date: 2025-01-06
+date: 2025-10-06
 author: "Cardinality Cloud"
 tags: ["faq", "contributing", "open-source"]
 description: "Learn how to contribute to the Prometheus Alert Generator project."

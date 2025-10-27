@@ -1,6 +1,6 @@
 ---
 title: "How do I report a bug or request a feature?"
-date: 2025-01-04
+date: 2025-10-04
 author: "Cardinality Cloud"
 tags: ["faq", "support", "issues"]
 description: "Guide to reporting bugs and requesting features for the Prometheus Alert Generator."

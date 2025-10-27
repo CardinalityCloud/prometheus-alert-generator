@@ -1,6 +1,6 @@
 ---
 title: "What is an Error Budget?"
-date: 2025-01-10
+date: 2025-10-10
 author: "Cardinality Cloud"
 tags: ["faq", "slo", "error-budget"]
 description: "Understanding error budgets and how they help balance reliability and innovation."
@@ -51,7 +51,7 @@ This is why we alert on burn rate, not absolute error rates!
 
 ## Using the Alert Generator
 
-Our [Alert Generator](/app/) automatically creates alerts based on burn rate thresholds:
+Our [Alert Generator](/) automatically creates alerts based on burn rate thresholds:
 
 1. Enter your SLO target
 2. Provide success/error metrics

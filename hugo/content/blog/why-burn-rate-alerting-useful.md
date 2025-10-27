@@ -1,6 +1,6 @@
 ---
 title: "Why is burn rate alerting useful?"
-date: 2025-01-18
+date: 2025-10-18
 author: "Cardinality Cloud"
 tags: ["faq", "slo", "burn-rate", "alerting"]
 description: "Understand how burn rate alerting provides early warnings and reduces alert fatigue."
@@ -33,8 +33,3 @@ When a burn rate alert fires, you immediately know:
 - The appropriate urgency level based on severity
 
 This helps teams prioritize incident response appropriately - not every issue requires waking someone up at 3 AM, but burning through 2 days of error budget in 2 hours certainly does.
-
-## Learn More
-
-- [The Art of SLOs (Alex Hidalgo)](https://www.circonus.com/art-slos-folksonomies-part-1/)
-- [SLO Alerting for Mortals (Grafana Labs)](https://grafana.com/blog/2021/12/06/slo-alerting-for-mortals/)

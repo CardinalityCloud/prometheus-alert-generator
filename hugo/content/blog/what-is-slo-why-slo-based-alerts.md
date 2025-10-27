@@ -1,6 +1,6 @@
 ---
 title: "What is an SLO and why should I use SLO-based alerts?"
-date: 2025-01-20
+date: 2025-10-20
 author: "Cardinality Cloud"
 tags: ["faq", "slo", "alerting", "fundamentals"]
 description: "Learn what SLOs are and why SLO-based alerting is superior to traditional threshold-based alerting."
@@ -352,6 +352,4 @@ The foundational concepts are covered in the Google SRE books:
 For a comprehensive practical guide, see Alex Hidalgo's [Implementing Service Level Objectives](https://www.oreilly.com/library/view/implementing-service-level/9781492076803/) (O'Reilly, 2020), which provides detailed strategies for defining, measuring, and alerting on SLOs in real-world environments.
 
 Additional resources:
-- [SLO Workshop](https://sre.google/resources/practices-and-processes/slo-workshop/) - Google's practical workshop format
-- [The Art of SLOs](https://blog.cloudflare.com/the-art-of-slos/) - Cloudflare's approach to SLO implementation
 - [SLOs, SLIs, SLAs, oh my!](https://www.atlassian.com/incident-management/kpis/sla-vs-slo-vs-sli) - Atlassian's beginner-friendly overview

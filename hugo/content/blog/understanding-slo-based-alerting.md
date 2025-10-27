@@ -1,6 +1,6 @@
 ---
 title: "Understanding SLO-Based Alerting"
-date: 2025-01-15
+date: 2025-10-15
 author: "Cardinality Cloud"
 tags: ["slo", "alerting", "prometheus"]
 description: "Learn how SLO-based alerting helps you focus on what matters: user-facing reliability issues."
@@ -53,4 +53,4 @@ The generator creates all necessary recording rules and multi-window alerts read
 
 - Read the [Google SRE Workbook chapter on SLO alerting](https://sre.google/workbook/alerting-on-slos/)
 - Check our [FAQ](/faq/) for common questions
-- Try our [Alert Generator](/app/) now
+- Try our [Alert Generator](/) now
