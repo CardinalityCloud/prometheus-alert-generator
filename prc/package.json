@@ -29,10 +29,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mantine/core": "^8.3.3",
     "@observablehq/plot": "^0.6.17",
+    "bootstrap": "^5.3.8",
     "d3": "^7.9.0",
     "react": "^19.1.1",
+    "react-bootstrap": "^2.10.10",
     "react-dom": "^19.1.1"
   },
   "devDependencies": {

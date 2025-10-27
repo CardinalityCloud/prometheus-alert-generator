@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Container, Paper, Stack, NumberInput, Button, Card, Text, Group, Badge } from '@mantine/core';
+import { Container, Card, Button, Badge, Form } from 'react-bootstrap';
 import * as Plot from '@observablehq/plot';
 import { InfoBox } from './components/InfoBox';
 
@@ -207,169 +207,176 @@ export function ResourceCalculator() {
       paddingTop: '2rem',
       paddingBottom: '4rem'
     }}>
-      <Container size="lg">
-        <Stack gap="lg">
-          <Paper shadow="md" p="xl" withBorder radius="lg" style={{ background: 'white' }}>
-            <Stack gap="md">
-              <div>
-                <Text size="lg" fw={600} mb="xs">Enter your configuration:</Text>
-                <Stack gap="md">
-                  <div>
-                    <Group gap="xs" mb={5}>
-                      <Text size="sm" fw={500}>Active Time Series</Text>
-                      <Badge color="red" variant="filled" size="sm">Required</Badge>
-                    </Group>
-                    <NumberInput
-                      placeholder="e.g., 250000"
-                      min={1000}
-                      step={1000}
-                      value={timeSeriesInput}
-                      onChange={setTimeSeriesInput}
-                      onKeyPress={handleKeyPress}
-                      size="md"
-                      required
-                    />
-                    <Text size="xs" c="dimmed" mt={5}>
-                      The number of unique time series your Prometheus instance tracks
-                    </Text>
+      <Container>
+        <div className="d-flex flex-column gap-4">
+          <Card className="shadow-sm">
+            <Card.Body className="p-4">
+              <div className="d-flex flex-column gap-3">
+                <div>
+                  <h5 className="mb-3">Enter your configuration:</h5>
+                  <div className="d-flex flex-column gap-3">
+                    <div>
+                      <div className="d-flex gap-2 align-items-center mb-2">
+                        <label className="form-label mb-0 fw-semibold">Active Time Series</label>
+                        <Badge bg="danger">Required</Badge>
+                      </div>
+                      <Form.Control
+                        type="number"
+                        placeholder="e.g., 250000"
+                        min={1000}
+                        step={1000}
+                        value={timeSeriesInput}
+                        onChange={(e) => setTimeSeriesInput(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        required
+                      />
+                      <small className="text-muted">
+                        The number of unique time series your Prometheus instance tracks
+                      </small>
+                    </div>
+
+                    <div className="d-flex gap-3 flex-wrap">
+                      <div style={{ flex: 1, minWidth: '250px' }}>
+                        <label className="form-label fw-semibold">Scrape Interval (seconds)</label>
+                        <Form.Control
+                          type="number"
+                          min={1}
+                          step={1}
+                          value={scrapeInterval}
+                          onChange={(e) => setScrapeInterval(e.target.value)}
+                          onKeyPress={handleKeyPress}
+                        />
+                        <small className="text-muted">
+                          How often Prometheus scrapes metrics
+                        </small>
+                      </div>
+                      <div style={{ flex: 1, minWidth: '250px' }}>
+                        <label className="form-label fw-semibold">Retention Period (days)</label>
+                        <Form.Control
+                          type="number"
+                          min={1}
+                          step={1}
+                          value={retentionDays}
+                          onChange={(e) => setRetentionDays(e.target.value)}
+                          onKeyPress={handleKeyPress}
+                        />
+                        <small className="text-muted">
+                          How long to keep historical data
+                        </small>
+                      </div>
+                    </div>
+
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      onClick={handleCalculate}
+                      style={{
+                        transition: 'transform 0.2s',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                    >
+                      Calculate
+                    </Button>
                   </div>
+                </div>
 
-                  <Group gap="md" align="flex-start">
-                    <div style={{ flex: 1 }}>
-                      <Text size="sm" fw={500} mb={5}>Scrape Interval (seconds)</Text>
-                      <NumberInput
-                        min={1}
-                        step={1}
-                        value={scrapeInterval}
-                        onChange={setScrapeInterval}
-                        onKeyPress={handleKeyPress}
-                        size="md"
-                      />
-                      <Text size="xs" c="dimmed" mt={5}>
-                        How often Prometheus scrapes metrics
-                      </Text>
+                {userPoint && (
+                  <InfoBox>
+                    <div className="d-flex flex-column gap-2">
+                      <h5 className="fw-bold">
+                        For {userTimeSeries?.toLocaleString()} active time series:
+                      </h5>
+                      <div className="d-flex gap-4 flex-wrap">
+                        <div>
+                          <small className="text-muted">Recommended Memory</small>
+                          <h3 className="fw-bold mb-0">{userPoint.memoryGB.toFixed(2)} GB</h3>
+                        </div>
+                        <div>
+                          <small className="text-muted">Safe Range</small>
+                          <h3 className="fw-bold mb-0">{userPoint.minMemoryGB.toFixed(2)} GB - {userPoint.maxMemoryGB.toFixed(2)} GB</h3>
+                        </div>
+                        <div>
+                          <small className="text-muted">Recommended CPU Cores</small>
+                          <h3 className="fw-bold mb-0">{userPoint.cpuCores}</h3>
+                        </div>
+                        <div>
+                          <small className="text-muted">Disk Space Required</small>
+                          <h3 className="fw-bold mb-0">
+                            {userPoint.diskSpaceGB >= 1024
+                              ? `${(userPoint.diskSpaceGB / 1024).toFixed(2)} TB`
+                              : `${userPoint.diskSpaceGB.toFixed(2)} GB`}
+                          </h3>
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <Text size="sm" fw={500} mb={5}>Retention Period (days)</Text>
-                      <NumberInput
-                        min={1}
-                        step={1}
-                        value={retentionDays}
-                        onChange={setRetentionDays}
-                        onKeyPress={handleKeyPress}
-                        size="md"
-                      />
-                      <Text size="xs" c="dimmed" mt={5}>
-                        How long to keep historical data
-                      </Text>
-                    </div>
-                  </Group>
-
-                  <Button
-                    onClick={handleCalculate}
-                    size="lg"
-                    style={{
-                      transition: 'transform 0.2s',
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                  >
-                    Calculate
-                  </Button>
-                </Stack>
+                  </InfoBox>
+                )}
               </div>
+            </Card.Body>
+          </Card>
 
-              {userPoint && (
-                <InfoBox>
-                  <Stack gap="xs">
-                    <Text size="lg" fw={700}>
-                      For {userTimeSeries?.toLocaleString()} active time series:
-                    </Text>
-                    <Group gap="xl" wrap="wrap">
-                      <div>
-                        <Text size="sm" c="dimmed">Recommended Memory</Text>
-                        <Text size="xl" fw={700}>{userPoint.memoryGB.toFixed(2)} GB</Text>
-                      </div>
-                      <div>
-                        <Text size="sm" c="dimmed">Safe Range</Text>
-                        <Text size="xl" fw={700}>{userPoint.minMemoryGB.toFixed(2)} GB - {userPoint.maxMemoryGB.toFixed(2)} GB</Text>
-                      </div>
-                      <div>
-                        <Text size="sm" c="dimmed">Recommended CPU Cores</Text>
-                        <Text size="xl" fw={700}>{userPoint.cpuCores}</Text>
-                      </div>
-                      <div>
-                        <Text size="sm" c="dimmed">Disk Space Required</Text>
-                        <Text size="xl" fw={700}>
-                          {userPoint.diskSpaceGB >= 1024
-                            ? `${(userPoint.diskSpaceGB / 1024).toFixed(2)} TB`
-                            : `${userPoint.diskSpaceGB.toFixed(2)} GB`}
-                        </Text>
-                      </div>
-                    </Group>
-                  </Stack>
-                </InfoBox>
-              )}
-            </Stack>
-          </Paper>
+          <Card className="shadow-sm">
+            <Card.Body className="p-4">
+              <div className="d-flex flex-column gap-3">
+                <h5 className="fw-semibold">Memory Requirements by Time Series</h5>
 
-          <Paper shadow="md" p="xl" withBorder radius="lg" style={{ background: 'white' }}>
-            <Stack gap="md">
-              <Text size="lg" fw={600}>Memory Requirements by Time Series</Text>
+                <div ref={chartRef} style={{ width: '100%', overflow: 'auto' }} />
 
-              <div ref={chartRef} style={{ width: '100%', overflow: 'auto' }} />
-
-              <Card withBorder style={{ backgroundColor: '#f8f9fa' }}>
-                <Stack gap="sm">
-                  <Text size="sm" fw={600}>Legend</Text>
-                  <Group gap="xl" wrap="wrap">
-                    <Group gap="xs">
-                      <div style={{
-                        width: 30,
-                        height: 3,
-                        backgroundColor: '#12b886',
-                        borderRadius: 2
-                      }} />
-                      <Text size="sm">Recommended: 7.5 KiB per series</Text>
-                    </Group>
-                    <Group gap="xs">
-                      <div style={{
-                        width: 30,
-                        height: 2,
-                        border: '1px dashed #38d9a9',
-                        borderTop: 'none',
-                        borderBottom: 'none'
-                      }} />
-                      <Text size="sm">Safe Range (7-9 KiB per series)</Text>
-                    </Group>
-                    <Group gap="xs">
-                      <div style={{
-                        width: 8,
-                        height: 8,
-                        backgroundColor: '#1971c2',
-                        borderRadius: '50%'
-                      }} />
-                      <Text size="sm">Example configurations</Text>
-                    </Group>
-                    {userPoint && (
-                      <Group gap="xs">
-                        <div style={{
-                          width: 12,
-                          height: 12,
-                          backgroundColor: '#fa5252',
-                          borderRadius: '50%',
-                          border: '2px solid white',
-                          boxShadow: '0 0 0 1px #fa5252'
-                        }} />
-                        <Text size="sm" fw={600} c="red.6">Your configuration</Text>
-                      </Group>
-                    )}
-                  </Group>
-                </Stack>
-              </Card>
-            </Stack>
-          </Paper>
-        </Stack>
+                <Card bg="light" border="light">
+                  <Card.Body>
+                    <div className="d-flex flex-column gap-2">
+                      <small className="fw-semibold">Legend</small>
+                      <div className="d-flex gap-4 flex-wrap">
+                        <div className="d-flex gap-2 align-items-center">
+                          <div style={{
+                            width: 30,
+                            height: 3,
+                            backgroundColor: '#12b886',
+                            borderRadius: 2
+                          }} />
+                          <small>Recommended: 7.5 KiB per series</small>
+                        </div>
+                        <div className="d-flex gap-2 align-items-center">
+                          <div style={{
+                            width: 30,
+                            height: 2,
+                            border: '1px dashed #38d9a9',
+                            borderTop: 'none',
+                            borderBottom: 'none'
+                          }} />
+                          <small>Safe Range (7-9 KiB per series)</small>
+                        </div>
+                        <div className="d-flex gap-2 align-items-center">
+                          <div style={{
+                            width: 8,
+                            height: 8,
+                            backgroundColor: '#1971c2',
+                            borderRadius: '50%'
+                          }} />
+                          <small>Example configurations</small>
+                        </div>
+                        {userPoint && (
+                          <div className="d-flex gap-2 align-items-center">
+                            <div style={{
+                              width: 12,
+                              height: 12,
+                              backgroundColor: '#fa5252',
+                              borderRadius: '50%',
+                              border: '2px solid white',
+                              boxShadow: '0 0 0 1px #fa5252'
+                            }} />
+                            <small className="fw-semibold text-danger">Your configuration</small>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </div>
+            </Card.Body>
+          </Card>
+        </div>
       </Container>
     </div>
   );

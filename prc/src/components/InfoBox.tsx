@@ -1,53 +1,52 @@
-import { Paper, useMantineTheme } from '@mantine/core';
-import type { PaperProps, MantineColor } from '@mantine/core';
+import { Card } from 'react-bootstrap';
+import type { CSSProperties, ReactNode } from 'react';
 
-export interface InfoBoxProps extends PaperProps {
-  /** Color from theme (defaults to primary) */
-  color?: MantineColor;
-  /** Variant for future use (currently only 'info' is implemented) */
+export interface InfoBoxProps {
+  /** Variant for styling */
   variant?: 'info' | 'success' | 'warning' | 'error';
   /** Children elements */
-  children?: React.ReactNode;
+  children?: ReactNode;
+  /** Additional styles */
+  style?: CSSProperties;
+  /** Additional className */
+  className?: string;
 }
 
 /**
- * InfoBox - A consistent styled Paper component for displaying important information
+ * InfoBox - A consistent styled Card component for displaying important information
  *
  * Usage:
  * ```tsx
  * <InfoBox>
- *   <Text>Your content here</Text>
+ *   <div>Your content here</div>
  * </InfoBox>
  * ```
  */
 export function InfoBox({
-  color,
   variant = 'info',
   children,
   style,
+  className = '',
   ...props
 }: InfoBoxProps) {
-  const theme = useMantineTheme();
-
-  // Use primary color if no color specified
-  const effectiveColor = color || theme.primaryColor;
-
-  // Get color shades from theme
-  const backgroundColor = theme.colors[effectiveColor][0]; // Lightest
-  const borderColor = theme.colors[effectiveColor][5]; // Medium (brand color)
+  // Map variant to Bootstrap border color
+  const borderVariant = {
+    'info': 'primary',
+    'success': 'success',
+    'warning': 'warning',
+    'error': 'danger'
+  }[variant];
 
   return (
-    <Paper
-      p="md"
-      withBorder
-      style={{
-        backgroundColor,
-        borderColor,
-        ...style,
-      }}
+    <Card
+      border={borderVariant}
+      className={`bg-light ${className}`}
+      style={{ ...style }}
       {...props}
     >
-      {children}
-    </Paper>
+      <Card.Body>
+        {children}
+      </Card.Body>
+    </Card>
   );
 }

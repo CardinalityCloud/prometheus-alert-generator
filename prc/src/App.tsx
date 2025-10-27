@@ -1,10 +1,6 @@
-import { MantineProvider } from '@mantine/core';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import { ResourceCalculator } from './ResourceCalculator.tsx';
 
 export default function App() {
-  return (
-    <MantineProvider>
-      <ResourceCalculator />
-    </MantineProvider>
-  );
+  return <ResourceCalculator />;
 }
