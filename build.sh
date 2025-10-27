@@ -3,32 +3,29 @@
 # Build script for Prometheus Alert Generator
 # Builds the React app and then Hugo site
 
-set -e  # Exit on error
+set -euo pipefail  # Exit on error
 
 echo "Building Prometheus Alert Generator..."
 echo ""
 
-# Build React app
-echo "Step 1: Building React app..."
-cd app
-npm run build
-cd ..
-echo "✓ React app built to hugo/static/app/"
-echo ""
+for app in pag prc; do
+    echo "Building React app: $app"
+    pushd $app
+    npm install
+    npm run build
+    popd
+done
 
 # Build Hugo site
-echo "Step 2: Building Hugo site..."
-cd hugo
+echo "Building Hugo site..."
+pushd hugo
+npm install
+npm run build:css
 hugo
-cd ..
-echo "✓ Hugo site built to hugo/public/"
-echo ""
+popd
 
+echo ""
 echo "Build complete!"
 echo ""
 echo "To preview:"
-echo "  cd hugo && hugo server"
-echo ""
-echo "React app is available at: http://localhost:1313/app/"
-echo "Blog is available at: http://localhost:1313/blog/"
-echo "FAQ is available at: http://localhost:1313/faq/"
+echo "  cd hugo && hugo server --disableFastRender"

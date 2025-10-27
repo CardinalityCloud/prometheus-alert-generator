@@ -69,4 +69,4 @@ enableEmoji = true
   [markup.highlight]
     style = 'monokai'
     lineNos = true
-    lineNumbersInTable = true
+    lineNumbersInTable = false

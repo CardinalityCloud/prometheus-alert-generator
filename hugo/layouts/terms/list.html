@@ -1,0 +1,10 @@
+{{ define "title" }}{{ .Title }} | {{ .Site.Title }}{{ end }}
+
+{{ define "main" }}
+<article class="paper">
+  <div class="content">
+    <!-- Page content from markdown -->
+    {{ .Content }}
+  </div>
+</article>
+{{ end }}

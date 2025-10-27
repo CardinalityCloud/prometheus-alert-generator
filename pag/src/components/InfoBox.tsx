@@ -1,14 +1,15 @@
 import { Card } from 'react-bootstrap';
+import type { CSSProperties, ReactNode } from 'react';
 
 export interface InfoBoxProps {
-  /** Variant for Bootstrap styling */
-  variant?: 'info' | 'success' | 'warning' | 'danger' | 'primary' | 'secondary';
+  /** Variant for styling */
+  variant?: 'info' | 'success' | 'warning' | 'error';
   /** Children elements */
-  children?: React.ReactNode;
-  /** Additional CSS classes */
+  children?: ReactNode;
+  /** Additional styles */
+  style?: CSSProperties;
+  /** Additional className */
   className?: string;
-  /** Inline styles */
-  style?: React.CSSProperties;
 }
 
 /**
@@ -24,14 +25,24 @@ export interface InfoBoxProps {
 export function InfoBox({
   variant = 'info',
   children,
-  className,
   style,
+  className = '',
+  ...props
 }: InfoBoxProps) {
+  // Map variant to Bootstrap border color
+  const borderVariant = {
+    'info': 'primary',
+    'success': 'success',
+    'warning': 'warning',
+    'error': 'danger'
+  }[variant];
+
   return (
     <Card
-      border={variant}
-      className={className}
-      style={style}
+      border={borderVariant}
+      className={`bg-light ${className}`}
+      style={{ ...style }}
+      {...props}
     >
       <Card.Body>
         {children}

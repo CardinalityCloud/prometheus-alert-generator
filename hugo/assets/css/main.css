@@ -14,8 +14,8 @@
 }
 
 html {
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 1.125rem;
+  line-height: 1.5;
 }
 
 body {
@@ -48,6 +48,15 @@ code, pre {
 
 .paper.footer {
   background: rgba(255, 255, 255, 0.95);
+  margin-bottom: 0;
+}
+
+/* Remove Bootstrap Container padding when inside Paper to avoid double padding */
+.paper .container {
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-right: 0;
+  padding-left: 0;
 }
 
 /* Masthead styles */
@@ -95,36 +104,80 @@ code, pre {
   text-decoration: underline;
 }
 
-/* Button styles (matching Mantine) */
-.btn {
+/* Button styles */
+/* Bootstrap provides base .btn styles. We customize specific variants. */
+
+/* Shared outline button styles */
+.btn-light,
+.btn-outline-primary {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  padding: 0.375rem 0.75rem;
   border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 1rem;
   text-decoration: none;
-  border: none;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.15s;
+  box-shadow: 0 4px 6px rgba(102, 126, 234, 0.2);
 }
 
 .btn-light {
-  background: var(--color-purple-0);
-  color: var(--color-purple-7);
-  border: 1px solid var(--color-purple-2);
+  font-weight: 600;
 }
 
-.btn-light:hover {
-  background: var(--color-purple-1);
+.btn-outline-primary {
+  font-weight: 400;
+}
+
+.btn-light:hover,
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active {
+  background: var(--color-purple-0);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-light:active,
+.btn-outline-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 6px rgba(102, 126, 234, 0.2);
+}
+
+/* Override Bootstrap's btn-primary with gradient style */
+.btn-primary {
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background: var(--gradient-primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
 }
 
 /* Footer styles */
 .footer-links {
   display: flex;
   justify-content: center;
-  gap: var(--spacing-xl);
+  column-gap: var(--spacing-xl);
+  row-gap: var(--spacing-xs);
   flex-wrap: wrap;
   margin-bottom: var(--spacing-md);
 }
@@ -184,7 +237,6 @@ code, pre {
 
 .content p {
   margin-bottom: var(--spacing-md);
-  line-height: 1.7;
 }
 
 .content a {
@@ -225,7 +277,7 @@ code, pre {
 }
 
 .content li {
-  margin-bottom: var(--spacing-xs);
+  margin-bottom: 0.25rem;
 }
 
 .content blockquote {
@@ -234,6 +286,29 @@ code, pre {
   margin: var(--spacing-lg) 0;
   color: #495057;
   font-style: italic;
+}
+
+.content table {
+  width: auto;
+  margin: var(--spacing-lg) auto;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.content table th {
+  color: var(--color-purple-8);
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 2px solid var(--color-purple-5);
+}
+
+.content table td {
+  padding: 0.5rem 0.75rem;
+}
+
+.content table tr:hover {
+  background: var(--color-purple-0);
 }
 
 /* Blog list styles */
@@ -277,7 +352,6 @@ code, pre {
 
 .blog-item-summary {
   color: #495057;
-  line-height: 1.6;
 }
 
 /* Tags */

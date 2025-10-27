@@ -22,9 +22,14 @@
       <span>FAQ</span>
     </a>
 
+    <a href="/terms/" class="footer-link">
+      {{ partial "icon.html" (dict "name" "file-text" "size" 18) }}
+      <span>Terms of Service</span>
+    </a>
+
     <a href="{{ .Site.Params.links.blog }}" target="_blank" rel="noopener noreferrer" class="footer-link">
       {{ partial "icon.html" (dict "name" "news" "size" 18) }}
-      <span>Blog</span>
+      <span>Cardinality Cloud's Blog</span>
     </a>
 
     <a href="mailto:{{ .Site.Params.email }}?subject=Prometheus Alert Generator Feedback" class="footer-link">

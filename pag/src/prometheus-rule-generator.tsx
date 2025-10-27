@@ -458,7 +458,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa', paddingTop: '2rem', paddingBottom: '4rem' }}>
+    <div>
       <Container>
         <div className="d-flex flex-column gap-4">
           {/* Top Banner Ad Placement */}
