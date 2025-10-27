@@ -1,62 +1,26 @@
 {{ define "title" }}{{ .Site.Title }} - {{ .Site.Params.description }}{{ end }}
 
-{{ define "main" }}
-<div class="paper">
-  <div class="content">
-    {{ .Content }}
-  </div>
-</div>
-
-<!-- Recent Blog Posts -->
-{{ $recentPosts := where .Site.RegularPages "Section" "blog" | first 3 }}
-{{ if $recentPosts }}
-<div class="paper">
-  <div class="content">
-    <h2>Recent Articles</h2>
-  </div>
-
-  <div class="blog-list">
-    {{ range $recentPosts }}
-      <article class="blog-item">
-        <h3 class="blog-item-title">
-          <a href="{{ .RelPermalink }}">{{ .Title }}</a>
-        </h3>
-
-        <div class="blog-item-meta">
-          <span>
-            {{ partial "icon.html" (dict "name" "calendar" "size" 14 "class" "icon-sm") }}
-            {{ .Date.Format "January 2, 2006" }}
-          </span>
-          {{ if .ReadingTime }}
-          <span>&bull;</span>
-          <span>
-            {{ partial "icon.html" (dict "name" "clock" "size" 14 "class" "icon-sm") }}
-            {{ .ReadingTime }} min read
-          </span>
-          {{ end }}
-        </div>
-
-        <div class="blog-item-summary">
-          {{ .Summary }}
-        </div>
-
-        {{ if .Params.tags }}
-        <div class="tags">
-          {{ range .Params.tags }}
-            <a href="{{ "/tags/" | relLangURL }}{{ . | urlize }}" class="tag">
-              {{ partial "icon.html" (dict "name" "tag" "size" 12 "class" "icon-sm") }}
-              {{ . }}
-            </a>
-          {{ end }}
-        </div>
-        {{ end }}
-      </article>
-    {{ end }}
-  </div>
-
-  <div class="content">
-    <p><a href="/blog/">View all articles &rarr;</a></p>
-  </div>
-</div>
+{{ define "head" }}
+<!-- PAG React App CSS -->
+{{- $appAssets := readDir "static/pag/assets" -}}
+{{- range $appAssets -}}
+  {{- if strings.HasSuffix .Name ".css" -}}
+<link rel="stylesheet" crossorigin href="/pag/assets/{{ .Name }}">
+  {{- end -}}
+{{- end -}}
 {{ end }}
+
+{{ define "main" }}
+<!-- PAG React App Root -->
+<div id="root"></div>
+{{ end }}
+
+{{ define "scripts" }}
+<!-- PAG React App JS -->
+{{- $appAssets := readDir "static/pag/assets" -}}
+{{- range $appAssets -}}
+  {{- if strings.HasSuffix .Name ".js" -}}
+<script type="module" crossorigin src="/pag/assets/{{ .Name }}"></script>
+  {{- end -}}
+{{- end -}}
 {{ end }}

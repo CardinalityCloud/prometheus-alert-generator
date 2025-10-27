@@ -5,3 +5,7 @@
 # Compiled Bootstrap CSS (generated from SCSS)
 assets/css/bootstrap.css
 assets/css/bootstrap.css.map
+
+# Vite build outputs (React apps)
+static/pag/
+static/prc/
