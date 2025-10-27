@@ -132,6 +132,50 @@ $theme-colors: (
 
 // 8. Add custom styles and design token utilities
 
+// Badge overrides - fix white-on-white rendering
+.badge {
+  // Default badge styling (when no color modifier is used)
+  &:not([class*="bg-"]):not([class*="badge-"]) {
+    background-color: $purple-5;
+    color: white;
+  }
+}
+
+// Ensure text-bg-* utilities work for badges
+.badge.text-bg-primary {
+  background-color: $purple-5 !important;
+  color: white !important;
+}
+
+.badge.text-bg-secondary {
+  background-color: $purple-7 !important;
+  color: white !important;
+}
+
+.badge.text-bg-danger,
+.badge.bg-danger {
+  background-color: #dc3545 !important;
+  color: white !important;
+}
+
+.badge.text-bg-success,
+.badge.bg-success {
+  background-color: #198754 !important;
+  color: white !important;
+}
+
+.badge.text-bg-warning,
+.badge.bg-warning {
+  background-color: #ffc107 !important;
+  color: #000 !important;
+}
+
+.badge.text-bg-info,
+.badge.bg-info {
+  background-color: #0dcaf0 !important;
+  color: #000 !important;
+}
+
 // Gradient utility (from design-tokens.json)
 .bg-gradient-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

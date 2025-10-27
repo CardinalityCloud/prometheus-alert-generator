@@ -12,16 +12,22 @@ SLOs are the cornerstone of Site Reliability Engineering (SRE) practices. They d
 
 ## Understanding the SLI/SLO/SLA Hierarchy
 
-Before diving deeper into SLOs, it's important to understand how they fit into the broader reliability framework:
+Before diving deeper into SLOs, it's important to understand how they fit into
+the broader reliability framework:
 
 ### SLI (Service Level Indicator)
-A **Service Level Indicator** is a quantitative measure of service behavior. It's the actual measurement you take. Common SLIs include:
+
+A **Service Level Indicator** is a quantitative measure of service behavior.
+It's the actual measurement you take. It can also be called a Key Performance
+Indicator (KPI).  Common SLIs include:
 
 - **Availability**: Ratio of successful requests to total requests
 - **Latency**: Percentage of requests faster than a threshold (e.g., 95th percentile &lt; 500ms)
 - **Error rate**: Percentage of requests that return errors
 - **Throughput**: Requests processed per second
 - **Durability**: Percentage of data retained without loss
+- **Saturation**: How "full" a service instance is expressed as a ratio or
+  percentage.  When does the service need to scale up?
 
 **Example SLIs:**
 ```promql
@@ -37,7 +43,9 @@ sum(rate(http_request_duration_count[5m]))
 ```
 
 ### SLO (Service Level Objective)
-A **Service Level Objective** is a target value or range for an SLI, measured over a specific time window. It's your internal goal.
+
+A **Service Level Objective** is a target value or range for an SLI, measured
+over a specific time window. It's your *internal* goal.
 
 **Example SLOs:**
 - 99.9% of HTTP requests succeed (availability SLO)
@@ -51,9 +59,12 @@ SLOs should be:
 - **Documented**: Clear ownership and measurement methodology
 
 ### SLA (Service Level Agreement)
-A **Service Level Agreement** is an explicit or implicit contract with your users that includes consequences if the SLO is not met. SLAs typically have:
 
-- Stricter targets than internal SLOs (buffer for safety)
+A **Service Level Agreement** is an explicit or implicit contract with your
+users that includes consequences if the SLO is not met. This is the *external*
+goal.  SLAs typically have:
+
+- Less strict targets than internal SLOs (buffer for safety)
 - Financial or contractual penalties for violations
 - Legal implications
 
@@ -68,18 +79,21 @@ Traditional monitoring alerts on arbitrary infrastructure thresholds: "CPU &gt; 
 ### Problems with Traditional Threshold Alerts
 
 **1. Disconnected from User Experience**
-- High CPU doesn't necessarily mean users are impacted
-- Low latency on individual components doesn't guarantee good user experience
-- Infrastructure issues may not manifest as user-visible problems
+- High CPU doesn't necessarily mean users are impacted.  In fact, you probably
+  want your CPU cores to be well utilized.
+- Low latency on individual components doesn't guarantee good user experience.
+- User-visible problems may not manifest as infrastructure related issues.
 
 **2. Alert Fatigue**
 - Teams become numb to constant paging
 - Important alerts get lost in noise
 - On-call engineers learn to ignore certain alerts
+- Engineers tell each other "It's okay to ignore that alert!"
 
 **3. Lack of Business Context**
 - No connection to business objectives
-- Unclear which issues require immediate attention
+- Unclear which issues require immediate attention.  Where is this alert on
+  the [Eisenhower Matrix](https://www.eisenhower.me/eisenhower-matrix/)?
 - Difficult to prioritize incident response
 
 **4. Static Thresholds Don't Scale**
@@ -91,6 +105,7 @@ Traditional monitoring alerts on arbitrary infrastructure thresholds: "CPU &gt; 
 - Alerts fire after problems occur
 - No warning when burning through reliability budget
 - Can't distinguish between "annoying" and "urgent"
+- It feels like everything is always on fire
 
 ### Advantages of SLO-Based Alerting
 
@@ -102,7 +117,9 @@ SLO-based alerts directly measure what users experience. If users aren't impacte
 
 **2. Multi-Window Burn Rate Detection**
 
-Modern SLO alerting uses **burn rate** to determine urgency. Burn rate measures how quickly you're consuming your error budget compared to the target consumption rate.
+Modern SLO alerting uses **burn rates** to determine urgency. Burn rate
+measures how quickly you're consuming your **error budget** compared to the target
+consumption rate.
 
 With a 99.9% SLO over 30 days:
 - **Normal consumption**: 0.1% error budget = 43.2 minutes of allowed downtime per 30 days
@@ -142,7 +159,7 @@ Error budget provides a shared language between engineering and business:
 - **Budget exhausted?** Focus on reliability, slow down releases
 - **Consistent budget surplus?** SLO might be too strict, costing engineering time
 
-This creates a quantitative framework for reliability vs. velocity trade-offs.
+This creates a **quantitative** framework for reliability vs. velocity trade-offs.
 
 **6. Predictive Early Warning**
 
@@ -178,7 +195,7 @@ Don't alert when you're meeting your SLO. Only alert when error budget is at ris
 More SLOs = more cognitive load = less clarity. Start with 1-3 SLOs per user-facing service:
 - One availability/success rate SLO
 - One latency SLO (optional)
-- One durability SLO (if applicable)
+- One saturation SLO (when to scale)
 
 **4. Infrastructure-Based SLOs**
 
@@ -209,6 +226,10 @@ Look at 3-6 months of data:
 - What are normal variance ranges?
 - What level could you commit to?
 
+New service without historical data?  Start at a 95% goal and choose what means
+success.  If the service responds to an HTTP API, start at a latency of 500ms
+as the goal.  Then iterate.
+
 **3. Set Initial SLOs Conservatively**
 
 Start with achievable targets:
@@ -227,17 +248,22 @@ For 99.9% SLO over 30 days:
 
 **5. Implement Recording Rules**
 
-Pre-compute SLI measurements at regular intervals (usually 1-5 minutes). This enables efficient burn rate calculations without expensive queries.
+Pre-compute SLI measurements at regular intervals (usually 1-5 minutes). This
+enables efficient burn rate calculations without expensive queries.  Tools for
+generating these recording rules efficiently and consistently is what this
+website is about.
 
 **6. Set Up Burn Rate Alerts**
 
-Implement multi-window burn rate alerts:
+The tools on this website implement multi-window burn rate alerts:
 - Fast burn (1h/5m windows): Page immediately
 - Slow burn (6h/30m windows): Create ticket for next day
 
 **7. Monitor and Iterate**
 
-Review SLO performance monthly:
+SLOs are a **process**, not a project.  The weekly meeting on-call engineers
+have to review the last week's alerts and pages is a great time to do this.
+Review SLO performance at least quarterly:
 - Are you consistently meeting SLOs? (Too easy?)
 - Are you consistently missing SLOs? (Too strict?)
 - Do alerts correlate with actual user impact?

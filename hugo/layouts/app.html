@@ -27,16 +27,18 @@
   <link rel="stylesheet" href="{{ $styles.RelPermalink }}">
 
   <!-- React App CSS and JS -->
-  {{- /* Find the built React app assets dynamically */ -}}
-  {{- $appAssets := readDir "static/pag/assets" -}}
+  {{- /* Determine app directory from params or section name */ -}}
+  {{- $appName := .Params.appName | default .Section | default "pag" -}}
+  {{- $assetsPath := printf "static/%s/assets" $appName -}}
+  {{- $appAssets := readDir $assetsPath -}}
   {{- range $appAssets -}}
     {{- if strings.HasSuffix .Name ".css" -}}
-  <link rel="stylesheet" crossorigin href="/pag/assets/{{ .Name }}">
+  <link rel="stylesheet" crossorigin href="/{{ $appName }}/assets/{{ .Name }}">
     {{- end -}}
   {{- end -}}
   {{- range $appAssets -}}
     {{- if strings.HasSuffix .Name ".js" -}}
-  <script type="module" crossorigin src="/pag/assets/{{ .Name }}"></script>
+  <script type="module" crossorigin src="/{{ $appName }}/assets/{{ .Name }}"></script>
     {{- end -}}
   {{- end -}}
 
@@ -52,9 +54,9 @@
     <!-- Masthead -->
     {{ partial "masthead.html" . }}
 
-    <!-- React App Root -->
+    <!-- React App Content (with optional intro) -->
     <main>
-      <div class="paper" id="root"></div>
+      {{ partial "react-app-content.html" . }}
     </main>
 
     <!-- Footer -->

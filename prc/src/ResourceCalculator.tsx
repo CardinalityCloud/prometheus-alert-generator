@@ -201,12 +201,7 @@ export function ResourceCalculator() {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#f8f9fa',
-      paddingTop: '2rem',
-      paddingBottom: '4rem'
-    }}>
+    <div>
       <Container>
         <div className="d-flex flex-column gap-4">
           <Card className="shadow-sm">
@@ -270,6 +265,7 @@ export function ResourceCalculator() {
                       variant="primary"
                       size="lg"
                       onClick={handleCalculate}
+                      disabled={!timeSeriesInput || (typeof timeSeriesInput === 'string' && timeSeriesInput.trim() === '') || Number(timeSeriesInput) < 1000}
                       style={{
                         transition: 'transform 0.2s',
                       }}

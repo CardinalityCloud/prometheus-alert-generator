@@ -68,10 +68,21 @@ code, pre {
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: var(--spacing-xs);
+}
+
+.masthead-title-link {
   background: var(--gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.masthead-title-link:hover {
+  opacity: 0.8;
+  text-decoration: none;
 }
 
 .masthead-subtitle {
