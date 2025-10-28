@@ -326,6 +326,8 @@ code, pre {
 .blog-list {
   display: grid;
   gap: var(--spacing-lg);
+  width: 100%;
+  max-width: 100%;
 }
 
 .blog-item {
@@ -334,6 +336,9 @@ code, pre {
   border-radius: var(--radius-md);
   background: white;
   transition: all 0.2s ease;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
 }
 
 .blog-item:hover {
@@ -443,8 +448,15 @@ code, pre {
     padding: var(--spacing-md);
   }
 
+  .blog-list {
+    gap: var(--spacing-md);
+    width: 100%;
+  }
+
   .blog-item {
     padding: var(--spacing-md);
+    min-width: 0;
+    overflow: hidden;
   }
 
   .masthead-title {
@@ -503,5 +515,25 @@ code, pre {
   .article-meta {
     flex-wrap: wrap;
     gap: var(--spacing-sm);
+  }
+
+  .tags {
+    max-width: 100%;
+  }
+
+  .tag {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+  }
+
+  /* Ensure all child elements respect parent width */
+  .blog-item * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .blog-item a {
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 }
