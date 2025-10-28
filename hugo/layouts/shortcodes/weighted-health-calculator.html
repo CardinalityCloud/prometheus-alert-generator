@@ -1,0 +1,267 @@
+<div class="weighted-health-calc my-5">
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">Weighted Aggregate Health Score Calculator</h4>
+    </div>
+    <div class="card-body">
+      <p class="text-muted mb-4">
+        Adjust KPI success rates and their weights to see how they combine into an aggregate health score.
+        All weights must sum to 1.0.
+      </p>
+
+      <div class="row">
+        <div class="col-lg-6">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">KPI Success Rates</h5>
+            <button type="button" class="btn btn-sm btn-success" id="whc-add-kpi">
+              + Add KPI
+            </button>
+          </div>
+
+          <div id="whc-kpi-container"></div>
+
+          <div class="alert whc-weight-sum-alert" id="whc-weight-sum-alert" role="alert"></div>
+        </div>
+
+        <div class="col-lg-6">
+          <h5 class="mb-3">Results</h5>
+
+          <div class="card bg-light mb-4">
+            <div class="card-body text-center">
+              <h6 class="text-muted mb-2">Aggregate Health Score</h6>
+              <div class="display-3 fw-bold whc-aggregate-score" id="whc-aggregate-score">99.50%</div>
+            </div>
+          </div>
+
+          <h6 class="mb-3">Weight Sum: <span id="whc-weight-sum" class="fw-bold">1.00</span></h6>
+
+          <h6 class="mb-3">Breakdown by KPI</h6>
+          <div id="whc-chart"></div>
+
+          <div class="mt-4">
+            <h6 class="mb-3">Calculation Details</h6>
+            <pre class="bg-light p-3 rounded" id="whc-calculation" style="font-size: 0.85rem; overflow-x: auto;"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.weighted-health-calc .whc-aggregate-score {
+  color: #20c997;
+}
+
+.weighted-health-calc .whc-aggregate-score.warning {
+  color: #ffc107;
+}
+
+.weighted-health-calc .whc-aggregate-score.danger {
+  color: #dc3545;
+}
+
+.weighted-health-calc .whc-weight-sum-alert {
+  display: none;
+}
+
+.weighted-health-calc .whc-weight-sum-alert.show {
+  display: block;
+}
+
+.weighted-health-calc .whc-kpi-card {
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.weighted-health-calc .whc-remove-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+</style>
+
+<script type="module">
+import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+
+// Initial KPIs
+let kpis = [
+  { id: 1, name: 'Payment Processing', value: 99.8, weight: 0.50 },
+  { id: 2, name: 'Request Success Rate', value: 99.5, weight: 0.50 }
+];
+
+let nextId = 3;
+
+function createKpiHtml(kpi, index) {
+  const canRemove = kpis.length > 2;
+  return `
+    <div class="whc-kpi-card" data-kpi-id="${kpi.id}">
+      ${canRemove ? `
+        <button type="button" class="btn btn-sm btn-outline-danger whc-remove-btn" onclick="window.whcRemoveKpi(${kpi.id})">
+          ×
+        </button>
+      ` : ''}
+      <div class="mb-3">
+        <label class="form-label fw-bold">KPI ${index + 1} Name</label>
+        <input type="text" class="form-control whc-kpi-name" data-kpi-id="${kpi.id}" value="${kpi.name}">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Success Rate (%)</label>
+        <div class="input-group">
+          <input type="number" class="form-control whc-kpi-value" data-kpi-id="${kpi.id}" min="0" max="100" step="0.1" value="${kpi.value}">
+          <span class="input-group-text">%</span>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Weight</label>
+        <input type="number" class="form-control whc-kpi-weight" data-kpi-id="${kpi.id}" min="0" max="1" step="0.01" value="${kpi.weight}">
+      </div>
+    </div>
+  `;
+}
+
+function renderKpis() {
+  const container = document.getElementById('whc-kpi-container');
+  container.innerHTML = kpis.map((kpi, index) => createKpiHtml(kpi, index)).join('');
+  attachEventListeners();
+  updateCalculator();
+}
+
+function attachEventListeners() {
+  document.querySelectorAll('.whc-kpi-name').forEach(input => {
+    input.addEventListener('input', (e) => {
+      const kpiId = parseInt(e.target.dataset.kpiId);
+      const kpi = kpis.find(k => k.id === kpiId);
+      if (kpi) kpi.name = e.target.value;
+      updateCalculator();
+    });
+  });
+
+  document.querySelectorAll('.whc-kpi-value').forEach(input => {
+    input.addEventListener('input', (e) => {
+      const kpiId = parseInt(e.target.dataset.kpiId);
+      const kpi = kpis.find(k => k.id === kpiId);
+      if (kpi) kpi.value = parseFloat(e.target.value) || 0;
+      updateCalculator();
+    });
+  });
+
+  document.querySelectorAll('.whc-kpi-weight').forEach(input => {
+    input.addEventListener('input', (e) => {
+      const kpiId = parseInt(e.target.dataset.kpiId);
+      const kpi = kpis.find(k => k.id === kpiId);
+      if (kpi) kpi.weight = parseFloat(e.target.value) || 0;
+      updateCalculator();
+    });
+  });
+}
+
+function addKpi() {
+  // Calculate remaining weight
+  const usedWeight = kpis.reduce((sum, kpi) => sum + kpi.weight, 0);
+  const remainingWeight = Math.max(0, 1.0 - usedWeight);
+
+  kpis.push({
+    id: nextId++,
+    name: `KPI ${kpis.length + 1}`,
+    value: 99.0,
+    weight: parseFloat(remainingWeight.toFixed(2))
+  });
+
+  renderKpis();
+}
+
+function removeKpi(kpiId) {
+  if (kpis.length <= 2) return; // Keep at least 2 KPIs
+  kpis = kpis.filter(k => k.id !== kpiId);
+  renderKpis();
+}
+
+function updateCalculator() {
+  // Calculate weight sum
+  const weightSum = kpis.reduce((sum, kpi) => sum + kpi.weight, 0);
+  document.getElementById('whc-weight-sum').textContent = weightSum.toFixed(2);
+
+  // Show warning if weights don't sum to 1
+  const alertDiv = document.getElementById('whc-weight-sum-alert');
+  if (Math.abs(weightSum - 1.0) > 0.001) {
+    alertDiv.className = 'alert alert-warning whc-weight-sum-alert show';
+    alertDiv.textContent = `⚠️ Weights sum to ${weightSum.toFixed(2)}, not 1.0. The calculation below uses actual weights, which may not represent a true percentage.`;
+  } else {
+    alertDiv.className = 'alert whc-weight-sum-alert';
+  }
+
+  // Calculate aggregate score
+  const contributions = kpis.map(kpi => ({
+    ...kpi,
+    contribution: kpi.weight * (kpi.value / 100)
+  }));
+
+  const aggregateScore = contributions.reduce((sum, kpi) => sum + kpi.contribution, 0);
+
+  // Update aggregate score display
+  const scoreElement = document.getElementById('whc-aggregate-score');
+  scoreElement.textContent = `${(aggregateScore * 100).toFixed(2)}%`;
+
+  // Color code based on score
+  scoreElement.className = 'display-3 fw-bold whc-aggregate-score';
+  if (aggregateScore < 0.95) {
+    scoreElement.className += ' danger';
+  } else if (aggregateScore < 0.99) {
+    scoreElement.className += ' warning';
+  }
+
+  // Update calculation details
+  const calcLines = contributions.map(kpi =>
+    `(${kpi.weight.toFixed(2)} × ${kpi.value.toFixed(1)}%) = ${(kpi.contribution * 100).toFixed(2)}%`
+  );
+  const calcText = `${calcLines.join('\n+ ')}\n${'='.repeat(50)}\n${(aggregateScore * 100).toFixed(2)}%`;
+  document.getElementById('whc-calculation').textContent = calcText;
+
+  // Create bar chart
+  const chartData = contributions.map(kpi => ({
+    name: kpi.name,
+    contribution: kpi.contribution * 100,
+    type: 'Weighted Contribution'
+  }));
+
+  const chart = Plot.plot({
+    marginLeft: 150,
+    marginBottom: 50,
+    height: Math.max(200, kpis.length * 60),
+    x: {
+      label: "Contribution to Aggregate Health (%)",
+      domain: [0, Math.max(50, Math.max(...chartData.map(d => d.contribution)) * 1.1)]
+    },
+    y: {
+      label: null
+    },
+    marks: [
+      Plot.barX(chartData, {
+        x: "contribution",
+        y: "name",
+        fill: "#20c997",
+        tip: true,
+        title: d => `${d.name}: ${d.contribution.toFixed(2)}%`
+      }),
+      Plot.ruleX([0])
+    ]
+  });
+
+  const chartDiv = document.getElementById('whc-chart');
+  chartDiv.innerHTML = '';
+  chartDiv.appendChild(chart);
+}
+
+// Expose functions globally for onclick handlers
+window.whcRemoveKpi = removeKpi;
+
+// Add KPI button
+document.getElementById('whc-add-kpi').addEventListener('click', addKpi);
+
+// Initial render
+renderKpis();
+</script>
