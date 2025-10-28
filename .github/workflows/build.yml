@@ -51,9 +51,9 @@ jobs:
       - name: Build site
         run: ./build.sh
         env:
-          VITE_GIT_COMMIT_SHA: ${{ github.sha }}
-          VITE_BUILD_DATE: ${{ github.event.head_commit.timestamp }}
           HUGO_ENV: production
+          HUGO_PARAMS_GITCOMMIT: ${{ github.sha }}
+          HUGO_PARAMS_BUILDDATE: ${{ github.event.head_commit.timestamp }}
 
       - name: configure aws credentials
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
