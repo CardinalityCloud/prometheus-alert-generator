@@ -439,6 +439,14 @@ code, pre {
     padding: var(--spacing-md);
   }
 
+  .paper {
+    padding: var(--spacing-md);
+  }
+
+  .blog-item {
+    padding: var(--spacing-md);
+  }
+
   .masthead-title {
     font-size: 2rem;
   }
@@ -467,5 +475,33 @@ code, pre {
 
   .content h3 {
     font-size: 1.15rem;
+  }
+
+  .content table {
+    width: 100%;
+    overflow-x: auto;
+    display: block;
+    font-size: 0.75rem;
+  }
+
+  .blog-item-title {
+    font-size: 1.25rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .blog-item-summary {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .blog-item-meta {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .article-meta {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
   }
 }
