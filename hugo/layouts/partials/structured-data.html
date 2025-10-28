@@ -1,0 +1,76 @@
+{{- if .IsPage -}}
+  {{- if eq .Section "blog" -}}
+  <!-- Article Schema for Blog Posts -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "{{ .Title }}",
+    "description": "{{ .Description | default .Summary }}",
+    "datePublished": "{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}",
+    {{- with .Lastmod }}
+    "dateModified": "{{ .Format "2006-01-02T15:04:05Z07:00" }}",
+    {{- end }}
+    "author": {
+      "@type": "Organization",
+      "name": "{{ .Site.Params.author }}",
+      "url": "https://cardinality.cloud/"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "{{ .Site.Params.author }}",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "{{ "og-image.png" | absURL }}"
+      }
+    },
+    {{- if .Params.image }}
+    "image": "{{ .Params.image | absURL }}",
+    {{- else }}
+    "image": "{{ "og-image.png" | absURL }}",
+    {{- end }}
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "{{ .Permalink }}"
+    }
+  }
+  </script>
+  {{- end -}}
+{{- end -}}
+
+{{- if .IsHome -}}
+<!-- Organization Schema for Homepage -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Cardinality Cloud, LLC",
+  "url": "https://cardinality.cloud/",
+  "logo": "{{ "og-image.png" | absURL }}",
+  "description": "{{ .Site.Params.description }}",
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "email": "{{ .Site.Params.email }}",
+    "contactType": "Sales"
+  },
+  "sameAs": [
+    "{{ .Site.Params.links.github }}"
+  ]
+}
+</script>
+
+<!-- WebSite Schema for Search Box -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "{{ .Site.Title }}",
+  "url": "{{ .Site.BaseURL }}",
+  "description": "{{ .Site.Params.description }}",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Cardinality Cloud, LLC"
+  }
+}
+</script>
+{{- end -}}
