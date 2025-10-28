@@ -42,7 +42,7 @@ enableEmoji = true
   # Version info (can be overridden at build time via environment variables)
   version = '0.1.0'
   gitCommit = 'dev'
-  buildDate = 'development'
+  buildDate = '2000-01-17T00:00:00-00:00'
 
   # Footer params
   copyright = '2025 Cardinality Cloud, LLC'
