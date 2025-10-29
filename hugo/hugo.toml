@@ -1,6 +1,6 @@
 baseURL = 'https://prometheus-alert-generator.com/'
 languageCode = 'en-us'
-title = 'Prometheus Alert Generator'
+title = 'Prometheus Alert Rule Generator & SLO Calculator | Free SRE Tool'
 
 # Google Analytics
 googleAnalytics = 'G-QFVX8S2N60'
@@ -34,7 +34,8 @@ enableEmoji = true
 
 # Params for templates
 [params]
-  description = 'Free web-based tools for Prometheus monitoring: SLO-based alert rule generator and resource calculator'
+  masthead = 'Free Prometheus Alert Rule and SLO Generator'
+  description = 'Tools for Prometheus monitoring: SLO-based PromQL generator, error budget calculator, and scaling to avoid OOMs.'
   author = 'Cardinality Cloud, LLC'
   github = 'https://github.com/CardinalityCloud/prometheus-alert-generator'
   email = 'jjneely@cardinality.cloud'
