@@ -5,13 +5,22 @@ layout: "app"
 appName: "pag"
 ---
 
-Easily calculate your error budget and generate production-ready Prometheus
-PromQL alert rules based on SLO best practices in seconds. Create customer
-experience goals with multi-burn-rate, error budget based alerts that catch
-issues before they breach your SLO &mdash; just like Google SRE teams do.
-[Learn more about SLO alerting][1].
+Stop writing complex YAML by hand! Stop trying to figure out the math! Use
+this free tool to instantly generate production-ready Prometheus PromQL rules
+and calculate your error budget based on SLO best practices for reliability
+and availability.  Create customer experience goals with multi-burn-rate,
+error budget based alerts that catch issues before they breach your SLO
+&mdash; just like Google SRE teams do. [Learn more about SLO alerting][1].
 
-Start monitoring what matters: user-facing reliability, not arbitrary
-thresholds.
+**Monitor what matters:** user-facing reliability, not arbitrary thresholds.
+
+**The Easiest Way to Implement SLO Alerting**
+
+* Automatically calculate your error budget and downtime (allowed downtime
+  per month/year).
+* Generates compliant PromQL alert examples for both Availability and Latency
+  SLOs.
+* Reduces alert fatigue and increases MTTR by generating highly reliable burn
+  rate alerts.
 
 [1]: /blog/what-is-slo-why-slo-based-alerts/
