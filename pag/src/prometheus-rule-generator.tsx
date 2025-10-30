@@ -799,7 +799,7 @@ ${customAlertAnnotations.split('\n').map((line: string) => `    ${line}`).join('
                           <Form.Control
                             as="textarea"
                             rows={3}
-                            placeholder="runbook_url: https://wiki.example.com/runbooks&#10;dashboard: https://grafana.example.com/d/app-overview"
+                            placeholder="runbook_url: https://wiki.example.com/runbooks&#10;dashboard_url: https://grafana.example.com/d/app-overview"
                             value={formValues.customAlertAnnotations}
                             onChange={(e) => updateFormValue('customAlertAnnotations', e.target.value)}
                             style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}

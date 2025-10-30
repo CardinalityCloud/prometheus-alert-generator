@@ -7,6 +7,9 @@
     "@type": "Article",
     "headline": "{{ .Title }}",
     "description": "{{ .Description | default .Summary }}",
+    {{- with .Params.tags }}
+    "keywords": [{{ range $index, $tag := . }}{{ if $index }}, {{ end }}"{{ $tag }}"{{ end }}],
+    {{- end }}
     "datePublished": "{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}",
     {{- with .Lastmod }}
     "dateModified": "{{ .Format "2006-01-02T15:04:05Z07:00" }}",
