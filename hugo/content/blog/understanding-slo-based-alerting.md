@@ -6,7 +6,9 @@ tags: ["slo", "alerting", "prometheus"]
 description: "Learn how SLO-based alerting helps you focus on what matters: user-facing reliability issues."
 ---
 
-Service Level Objective (SLO) based alerting is a powerful approach to monitoring that focuses on user-impacting reliability issues rather than arbitrary thresholds.
+Why does a 5% error rate trigger an alert at 2 AM? Is it catastrophic during peak traffic or meaningless during low usage? Traditional static thresholds can't tell you. SLO-based alerting asks a better question: "Are we consuming our error budget faster than planned?" This approach ties alerts directly to user-impacting reliability issues, eliminating arbitrary thresholds and reducing alert fatigue while catching real problems early.
+
+<!--more-->
 
 ## What is an SLO?
 

@@ -8,7 +8,7 @@
   </div>
 
   <div class="blog-list">
-    {{ range .Pages }}
+    {{ range .Paginator.Pages }}
       <article class="blog-item">
         <h2 class="blog-item-title">
           <a href="{{ .RelPermalink }}">{{ .Title }}</a>
@@ -36,6 +36,11 @@
           {{ .Summary }}
         </div>
 
+        <a href="{{ .RelPermalink }}" class="read-more-link">
+          Read full article
+          {{ partial "icon.html" (dict "name" "arrow-right" "size" 16 "class" "icon-sm") }}
+        </a>
+
         {{ if .Params.tags }}
         <div class="tags">
           {{ range .Params.tags }}
@@ -50,10 +55,51 @@
     {{ end }}
   </div>
 
-  {{ if eq (len .Pages) 0 }}
+  {{ if eq (len .Paginator.Pages) 0 }}
   <div class="content">
     <p>No articles yet. Check back soon!</p>
   </div>
+  {{ end }}
+
+  {{/* Pagination controls */}}
+  {{ if gt .Paginator.TotalPages 1 }}
+  <nav class="pagination" role="navigation" aria-label="Pagination">
+    <div class="pagination-wrapper">
+      {{ if .Paginator.HasPrev }}
+        <a href="{{ .Paginator.Prev.URL }}" class="pagination-link pagination-prev">
+          {{ partial "icon.html" (dict "name" "arrow-left" "size" 16 "class" "icon-sm") }}
+          Previous
+        </a>
+      {{ else }}
+        <span class="pagination-link pagination-prev pagination-disabled">
+          {{ partial "icon.html" (dict "name" "arrow-left" "size" 16 "class" "icon-sm") }}
+          Previous
+        </span>
+      {{ end }}
+
+      <div class="pagination-numbers">
+        {{ range .Paginator.Pagers }}
+          {{ if eq . $.Paginator }}
+            <span class="pagination-number pagination-current" aria-current="page">{{ .PageNumber }}</span>
+          {{ else }}
+            <a href="{{ .URL }}" class="pagination-number">{{ .PageNumber }}</a>
+          {{ end }}
+        {{ end }}
+      </div>
+
+      {{ if .Paginator.HasNext }}
+        <a href="{{ .Paginator.Next.URL }}" class="pagination-link pagination-next">
+          Next
+          {{ partial "icon.html" (dict "name" "arrow-right" "size" 16 "class" "icon-sm") }}
+        </a>
+      {{ else }}
+        <span class="pagination-link pagination-next pagination-disabled">
+          Next
+          {{ partial "icon.html" (dict "name" "arrow-right" "size" 16 "class" "icon-sm") }}
+        </span>
+      {{ end }}
+    </div>
+  </nav>
   {{ end }}
 </div>
 {{ end }}

@@ -7,7 +7,9 @@ description: "Deep dive into the Riemann Sum-inspired technique for efficient er
 math: true
 ---
 
-This tool uses a Riemann Sum-inspired technique to efficiently calculate error budget consumption over long time windows (like 30 days) without requiring expensive range queries over raw counter metrics.
+Calculating error budget over 30 days should be simple, but naive Prometheus queries time out on high-cardinality metrics. This tool uses a Riemann Sum-inspired technique that pre-computes error ratios at 5-minute intervals, turning an expensive range query into a single fast aggregation. The result: accurate error budget calculations that scale.
+
+<!--more-->
 
 ## The Problem
 

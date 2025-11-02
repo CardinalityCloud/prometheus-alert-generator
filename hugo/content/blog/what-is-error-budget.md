@@ -6,7 +6,9 @@ tags: ["faq", "slo", "error-budget"]
 description: "Understanding error budgets and how they help balance reliability and innovation."
 ---
 
-An error budget is the amount of unreliability your service can tolerate while still meeting your SLO.
+Engineering wants to slow down and fix stability issues. Product wants to ship faster and hit deadlines. Who's right? Both - and neither. The real question isn't "should we prioritize reliability or velocity?" but "how much unreliability can we tolerate while still meeting our promises?" That's your error budget: the quantitative answer that turns endless debates into data-driven decisions. With a 99.9% SLO, you get 43.2 minutes of downtime per month to spend on innovation, experiments, or controlled risks.
+
+<!--more-->
 
 ## The Math
 

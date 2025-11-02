@@ -7,7 +7,9 @@ description: "Comprehensive guide to calculating memory, CPU, and disk requireme
 math: true
 ---
 
-Properly sizing a Prometheus deployment is critical for reliable monitoring. Our Resource Calculator helps you estimate memory, CPU, and disk requirements based on your metrics workload.
+Your monitoring just went down because Prometheus got OOM-killed again. Or maybe you're paying for 32GB of RAM when 8GB would suffice. Sizing Prometheus shouldn't be guesswork - it's actually predictable math based on three inputs: active time series, scrape interval, and retention period. Our Resource Calculator does the math for you, showing memory, CPU, and disk requirements with visual guidance on safe ranges and real-world scaling examples.
+
+<!--more-->
 
 ## The Three Key Inputs
 

@@ -8,6 +8,9 @@ googleAnalytics = 'G-QFVX8S2N60'
 # Enable emoji support
 enableEmoji = true
 
+# Summary length for blog/FAQ list pages (in words)
+summaryLength = 35
+
 # Configure taxonomies (tags for FAQ filtering)
 [taxonomies]
   tag = 'tags'
@@ -55,6 +58,10 @@ enableEmoji = true
     blog = 'https://cardinality.cloud/blog/'
     github = 'https://github.com/CardinalityCloud/prometheus-alert-generator'
     issues = 'https://github.com/CardinalityCloud/prometheus-alert-generator/issues'
+
+# Pagination configuration
+[pagination]
+  pagerSize = 10
 
 # Markup configuration for markdown
 [markup]

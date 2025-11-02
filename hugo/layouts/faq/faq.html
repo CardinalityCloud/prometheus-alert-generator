@@ -10,7 +10,8 @@
   <div class="blog-list">
     {{/* Get all pages with "faq" tag */}}
     {{ $faqPages := where .Site.RegularPages "Params.tags" "intersect" (slice "faq") }}
-    {{ range $faqPages.ByDate.Reverse }}
+    {{ $paginator := .Paginate ($faqPages.ByDate.Reverse) }}
+    {{ range $paginator.Pages }}
       <article class="blog-item">
         <h2 class="blog-item-title">
           <a href="{{ .RelPermalink }}">{{ .Title }}</a>
@@ -31,6 +32,11 @@
           {{ .Summary }}
         </div>
 
+        <a href="{{ .RelPermalink }}" class="read-more-link">
+          Read full article
+          {{ partial "icon.html" (dict "name" "arrow-right" "size" 16 "class" "icon-sm") }}
+        </a>
+
         {{ if .Params.tags }}
         <div class="tags">
           {{ range .Params.tags }}
@@ -44,11 +50,52 @@
       </article>
     {{ end }}
 
-    {{ if eq (len $faqPages) 0 }}
+    {{ if eq (len $paginator.Pages) 0 }}
     <div class="content">
       <p>No FAQ articles yet. Check back soon!</p>
     </div>
     {{ end }}
   </div>
+
+  {{/* Pagination controls */}}
+  {{ if gt $paginator.TotalPages 1 }}
+  <nav class="pagination" role="navigation" aria-label="Pagination">
+    <div class="pagination-wrapper">
+      {{ if $paginator.HasPrev }}
+        <a href="{{ $paginator.Prev.URL }}" class="pagination-link pagination-prev">
+          {{ partial "icon.html" (dict "name" "arrow-left" "size" 16 "class" "icon-sm") }}
+          Previous
+        </a>
+      {{ else }}
+        <span class="pagination-link pagination-prev pagination-disabled">
+          {{ partial "icon.html" (dict "name" "arrow-left" "size" 16 "class" "icon-sm") }}
+          Previous
+        </span>
+      {{ end }}
+
+      <div class="pagination-numbers">
+        {{ range $paginator.Pagers }}
+          {{ if eq . $paginator }}
+            <span class="pagination-number pagination-current" aria-current="page">{{ .PageNumber }}</span>
+          {{ else }}
+            <a href="{{ .URL }}" class="pagination-number">{{ .PageNumber }}</a>
+          {{ end }}
+        {{ end }}
+      </div>
+
+      {{ if $paginator.HasNext }}
+        <a href="{{ $paginator.Next.URL }}" class="pagination-link pagination-next">
+          Next
+          {{ partial "icon.html" (dict "name" "arrow-right" "size" 16 "class" "icon-sm") }}
+        </a>
+      {{ else }}
+        <span class="pagination-link pagination-next pagination-disabled">
+          Next
+          {{ partial "icon.html" (dict "name" "arrow-right" "size" 16 "class" "icon-sm") }}
+        </span>
+      {{ end }}
+    </div>
+  </nav>
+  {{ end }}
 </div>
 {{ end }}

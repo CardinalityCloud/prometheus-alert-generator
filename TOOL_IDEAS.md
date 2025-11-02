@@ -1,10 +1,14 @@
 # Prometheus Tool Ideas
 
-This document contains potential future tools/calculators that would be valuable additions to the Prometheus community based on common pain points and complaints.
+This document contains potential future tools/calculators that would be
+valuable additions to the Prometheus community based on common pain points and
+complaints.
 
 ## Community Pain Points Analysis
 
-Based on recurring complaints in Prometheus communities (Reddit, Stack Overflow, Slack channels, GitHub issues), the following tools would provide significant value.
+Based on recurring complaints in Prometheus communities (Reddit, Stack
+Overflow, Slack channels, GitHub issues), the following tools would provide
+significant value.
 
 ---
 

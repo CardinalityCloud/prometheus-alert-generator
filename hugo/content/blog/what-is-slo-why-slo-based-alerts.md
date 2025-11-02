@@ -6,9 +6,9 @@ tags: ["faq", "slo", "alerting", "fundamentals"]
 description: "Learn what SLOs are and why SLO-based alerting is superior to traditional threshold-based alerting."
 ---
 
-An SLO (Service Level Objective) is a target reliability goal for your service, expressed as a percentage over a specific time window. For example, "99.9% of requests should complete successfully over the last 30 days" or "99.95% of API requests should return within 500ms over the last 7 days."
+Traditional infrastructure alerts page you when CPU hits 80%, but your users are fine. Meanwhile, degraded API performance goes unnoticed because no arbitrary threshold was crossed. An SLO (Service Level Objective) changes this - it's a target reliability goal that measures what users actually experience, like "99.9% of requests succeed over 30 days." Born from Google's Site Reliability Engineering (SRE) practices, SLO-based alerting only pages when user experience is genuinely at risk, eliminating alert fatigue while catching real issues early.
 
-SLOs are the cornerstone of Site Reliability Engineering (SRE) practices. They define the level of reliability your users can expect and provide a quantitative framework for balancing reliability investments with feature development velocity.
+<!--more-->
 
 ## Understanding the SLI/SLO/SLA Hierarchy
 

@@ -368,6 +368,31 @@ code, pre {
 
 .blog-item-summary {
   color: #495057;
+  margin-bottom: var(--spacing-md);
+}
+
+.read-more-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--color-purple-7);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.read-more-link:hover {
+  color: var(--color-primary);
+  gap: 0.5rem;
+}
+
+.read-more-link .icon-sm {
+  transition: transform 0.15s ease;
+}
+
+.read-more-link:hover .icon-sm {
+  transform: translateX(2px);
 }
 
 /* Tags */
@@ -391,6 +416,75 @@ code, pre {
 
 .tag:hover {
   background: var(--color-purple-1);
+}
+
+/* Pagination */
+.pagination {
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-purple-1);
+}
+
+.pagination-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.pagination-numbers {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.pagination-link,
+.pagination-number {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.pagination-link {
+  color: var(--color-purple-7);
+  border: 1px solid var(--color-purple-1);
+  background: white;
+}
+
+.pagination-link:hover:not(.pagination-disabled) {
+  color: var(--color-primary);
+  border-color: var(--color-purple-3);
+  background: var(--color-purple-0);
+}
+
+.pagination-link.pagination-disabled {
+  color: #adb5bd;
+  border-color: #e9ecef;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.pagination-number {
+  color: var(--color-purple-7);
+  min-width: 2.5rem;
+  justify-content: center;
+}
+
+.pagination-number:hover {
+  color: var(--color-primary);
+  background: var(--color-purple-0);
+}
+
+.pagination-number.pagination-current {
+  color: white;
+  background: var(--color-purple-7);
+  cursor: default;
 }
 
 /* Info box (matching InfoBox component) */
@@ -535,5 +629,23 @@ code, pre {
   .blog-item a {
     overflow-wrap: break-word;
     word-break: break-word;
+  }
+
+  /* Responsive pagination */
+  .pagination-wrapper {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .pagination-numbers {
+    order: -1;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pagination-prev,
+  .pagination-next {
+    width: 100%;
+    justify-content: center;
   }
 }

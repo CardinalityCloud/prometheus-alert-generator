@@ -6,7 +6,9 @@ tags: ["faq", "prometheus", "promql", "monitoring"]
 description: "Practical guide to querying the generated SLO recording rules in Prometheus."
 ---
 
-Once you've loaded the generated rules into Prometheus, you can query the recording rules directly to monitor your application's health and SLO compliance. Here are the most useful queries:
+You've deployed the generated SLO rules to Prometheus - now what? The recording rules are pre-computing your SLO metrics every minute, but how do you actually check if you're meeting your targets, monitor error budget consumption, or build dashboards? This guide shows you the essential PromQL queries to unlock the full power of your SLO monitoring, from checking current status to visualizing long-term trends.
+
+<!--more-->
 
 ## Check Current SLO Status
 

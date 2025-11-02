@@ -2,12 +2,29 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+## Repository Structure
 
-This is a free web-based tool suite for Prometheus monitoring, providing two main tools:
+This repository contains two main parts:
 
-1. **Alert Rule Generator** - Generates Prometheus alerting rules with SLO (Service Level Objective) support
-2. **Resource Calculator** - Calculates memory, CPU, and disk space requirements for Prometheus deployments
+1. **React Applications** (`pag/` and `prc/` directories) - Interactive tools built with React and React-Bootstrap:
+   - `pag/` - Alert Rule Generator
+   - `prc/` - Resource Calculator
+   - Built as theme-neutral static SPAs
+   - Embedded into the Hugo site via static file deployment
+
+2. **Hugo Marketing Site** (`hugo/` directory) - Static site with blog and documentation:
+   - Marketing pages and tool landing pages
+   - Blog articles about Prometheus and SLOs
+   - FAQ section with technical content
+   - Provides theming when React apps are embedded
+   - **See `hugo/CLAUDE.md` for Hugo-specific documentation**
+
+## Project Overview - React Applications
+
+The `pag/` and `prc/` directories contain React-based interactive tools for Prometheus monitoring:
+
+1. **Alert Rule Generator** (`pag/`) - Generates Prometheus alerting rules with SLO (Service Level Objective) support
+2. **Resource Calculator** (`prc/`) - Calculates memory, CPU, and disk space requirements for Prometheus deployments
 
 **Key Features:**
 - SLO-based alerting with multi-window burn rate detection
@@ -19,7 +36,11 @@ This is a free web-based tool suite for Prometheus monitoring, providing two mai
 
 ## Development Commands
 
+Each React app (`pag/` and `prc/`) has its own build process. Navigate to the app directory first:
+
 ```bash
+cd pag/  # or cd prc/
+
 # Install dependencies
 npm install
 
@@ -41,26 +62,27 @@ npm run preview
 ### Tech Stack
 - **Frontend Framework:** React 19 with TypeScript
 - **Build Tool:** Vite
-- **UI Framework:** Mantine v8 (components, forms, hooks)
-- **Routing:** React Router DOM v7
+- **UI Framework:** React-Bootstrap 2.10+ with Bootstrap 5.3
 - **YAML Processing:** js-yaml
 - **Icons:** Tabler Icons React
-- **Data Visualization:** Observable Plot (for resource calculator charts)
-- **Math Rendering:** KaTeX (via remark-math and rehype-katex)
+- **Data Visualization:** Observable Plot (Resource Calculator only)
 
-### Application Structure
+**Note:** The React apps are theme-neutral. Styling/theming is provided by the Hugo site when the apps are embedded. The apps use standard Bootstrap components without custom theming.
 
-The app is a single-page application with four routes defined in `src/App.tsx`:
-- `/` - Main rule generator (`PrometheusRuleGenerator` component)
-- `/resources` - Resource calculator (`ResourceCalculator` component)
-- `/faq` - FAQ page (`Faq` component)
-- `*` - 404 page (`NotFound` component)
+### Application Structure - Alert Generator (`pag/`)
 
-### Core Generator Logic (`src/prometheus-rule-generator.tsx`)
+The Alert Generator is a single-page application that provides:
 
-This is the main component (~1100 lines) that handles:
+**Core Files:**
+- `src/App.tsx` - Main application component
+- `src/prometheus-rule-generator.tsx` - Form and rule generation logic (~1100 lines)
+- `src/components/` - Reusable React components
+- `vite.config.ts` - Vite build configuration
+- `index.html` - Entry point
 
-1. **Form Management:** Uses `@mantine/form` with validation for:
+**Key Components:**
+
+1. **Form Management:** Uses React-Bootstrap forms with custom validation:
    - PromQL metric pattern validation (metric names and label selectors)
    - Required fields (app name, SLO type)
    - Custom alert labels/annotations parsing
@@ -82,9 +104,16 @@ This is the main component (~1100 lines) that handles:
    - Defaults to `http_requests_total` with appropriate label matchers if not specified
    - Supports custom metric queries with label selectors
 
-### Resource Calculator (`src/ResourceCalculator.tsx`)
+### Application Structure - Resource Calculator (`prc/`)
 
-This component calculates Prometheus resource requirements based on user input:
+The Resource Calculator calculates Prometheus resource requirements based on user input:
+
+**Key Files:**
+- `src/App.tsx` - Main application component
+- `src/ResourceCalculator.tsx` - Calculator logic and visualization
+- `src/components/` - Reusable React components
+
+**Functionality:**
 
 1. **Input Parameters:**
    - **Active Time Series** (required): Number of unique time series tracked by Prometheus
@@ -107,66 +136,12 @@ This component calculates Prometheus resource requirements based on user input:
    - Logarithmic x-axis scale for better visualization across orders of magnitude
    - Tooltips show memory requirements and safe ranges for each point
 
-### Shared Components
-
-**`src/components/Masthead.tsx`:**
-- Reusable header component with navigation between tools
-- Props control visibility of Alert Generator, Resource Calculator, and FAQ buttons
-- Consistent branding across all pages
-- Uses theme gradient for title text with background-clip technique
-
-**`src/components/Footer.tsx`:**
-- Reusable footer with links to GitHub, FAQ, Blog, and Email feedback
-- Displays app version and build date
-- Uses HTML entities for special characters (e.g., `&copy;`, `&bull;`)
-
-**`src/components/InfoBox.tsx`:**
-- Reusable styled Paper component for displaying important information
-- Automatically uses theme colors: `purple[0]` for background, `purple[5]` for border
-- Accepts optional `color` prop to use different theme colors
-- Used for:
-  - Resource calculator results display
-  - SLO allowed downtime display
-  - Any highlighted information boxes
-- Ensures visual consistency across all info displays
-
-**`src/theme.ts`:**
-- Shared Mantine theme configuration
-- **Primary Color:** Purple (matching brand gradient)
-- **Purple Color Scale:** 10-shade palette from `#f3f0ff` (lightest) to `#4a2c5f` (darkest)
-  - `purple[5]`: `#667eea` - Brand gradient start color
-  - `purple[7]`: `#764ba2` - Brand gradient end color
-  - `purple[8]`: `#5f3a7d` - Used for text emphasis in InfoBoxes
-- **Centralized Gradient:** `theme.other.gradients.primary` = `linear-gradient(135deg, #667eea 0%, #764ba2 100%)`
-  - Used for page backgrounds, buttons, and text gradients
-  - Single source of truth for brand gradient
-- **Fonts:**
-  - `fontFamily`: Fira Sans with system font fallbacks (`-apple-system`, `BlinkMacSystemFont`, `Segoe UI`, `Roboto`)
-  - `fontFamilyMonospace`: Fira Mono with monospace fallbacks (`ui-monospace`, `SFMono-Regular`, `SF Mono`, `Menlo`, `Consolas`, `Liberation Mono`)
-  - Both loaded from Google Fonts in `index.html`
-- **Custom Shadows:** sm, md, lg variants
-- **Component Defaults:**
-  - Paper: `shadow: 'sm'`
-  - Button: `radius: 'md'`
-  - TextInput: Focus border uses purple (`#667eea`)
-
-### FAQ Content (`src/faq-content.ts`)
-
-Structured FAQ items with markdown support, icons, and unique IDs for navigation. The FAQ is rendered using `react-markdown` in `src/Faq.tsx`.
-
-**Math Rendering:**
-- FAQ includes mathematical formulas using LaTeX syntax (e.g., integrals, summations)
-- Uses KaTeX for fast, beautiful math rendering
-- Display math (block): `$$...$$` syntax
-- Inline math: `$...$` syntax (if needed)
-- Configured via `remark-math` and `rehype-katex` plugins in `Faq.tsx`
-- Example: Riemann Sum approximations for error budget calculations
-
 ### Build Configuration
 
 **Vite Config (`vite.config.ts`):**
 - Defines build-time constants: `__APP_VERSION__`, `__GIT_COMMIT_SHA__`, `__BUILD_DATE__`
 - Uses `@vitejs/plugin-react` for Fast Refresh
+- Outputs to `dist/` directory
 
 **TypeScript:**
 - Project uses TypeScript 5.9 with separate configs:
@@ -183,7 +158,7 @@ Structured FAQ items with markdown support, icons, and unique IDs for navigation
 
 ### SLO and Burn Rate Alerting
 
-The core value of this tool is generating Google SRE-style multi-window, multi-burn-rate alerts:
+The core value of the Alert Generator is creating Google SRE-style multi-window, multi-burn-rate alerts:
 
 - **SLO (Service Level Objective):** Target reliability percentage (e.g., 99.9%)
 - **Error Budget:** Allowed failure rate (100% - SLO target)
@@ -197,7 +172,7 @@ Example: With a 99.9% SLO over 30 days:
 
 ### PromQL Pattern Validation
 
-The app validates user-provided PromQL metric patterns in `validatePromQLMetric()`:
+The Alert Generator validates user-provided PromQL metric patterns in `validatePromQLMetric()`:
 - Metric names must match: `[a-zA-Z_:][a-zA-Z0-9_:]*`
 - Label selectors must use format: `label_name="value"` or `label_name=~"regex"`
 - Supports `=`, `=~`, `!=`, `!~` operators
@@ -212,64 +187,130 @@ This separation improves query performance and allows dashboard visualization of
 
 **Design Pattern:** Alerting rules and dependent recording rules dynamically reference the `job:slo_goal:ratio` recording rule (e.g., `1 - job:slo_goal:ratio{...}`) rather than embedding hardcoded error budget values. This allows the SLO goal to be adjusted by updating a single recording rule without regenerating the entire configuration.
 
-## Styling & Theming
-
-### Color Palette
-
-The app uses a unified purple theme that matches the brand gradient:
-
-**Brand Gradient:** `#667eea` → `#764ba2`
-- Used for: page backgrounds, buttons, title text, accent colors
-
-**Purple Scale (10 shades):**
-```typescript
-purple[0]: '#f3f0ff' // InfoBox backgrounds
-purple[1]: '#e5dbff' // Very light
-purple[2]: '#d0bfff' // Light
-purple[3]: '#b197fc' // Light-medium
-purple[4]: '#9775fa' // Medium-light
-purple[5]: '#667eea' // Brand gradient start ⭐
-purple[6]: '#7265d4' // Medium-dark
-purple[7]: '#764ba2' // Brand gradient end ⭐
-purple[8]: '#5f3a7d' // Text emphasis (used in InfoBox values)
-purple[9]: '#4a2c5f' // Darkest
-```
-
-### Theme Usage Best Practices
-
-**DO:**
-- ✅ Use `theme.other.gradients.primary` for gradients
-- ✅ Use `theme.colors.purple[n]` for purple shades
-- ✅ Use `InfoBox` component for highlighted information displays
-- ✅ Use Mantine's color tokens: `c="purple.8"` for text colors
-- ✅ Reference theme in components: `import { theme } from './theme'`
-
-**DON'T:**
-- ❌ Hardcode hex colors like `#667eea` or `#764ba2`
-- ❌ Hardcode `linear-gradient(...)` - use theme gradient instead
-- ❌ Create custom Paper components with hardcoded colors - use InfoBox
-- ❌ Use blue colors (old theme) - use purple
-
-### Character Encoding
+## Character Encoding Standards
 
 **All source files use 7-bit ASCII only:**
-- Special characters use HTML entities (e.g., `&copy;`, `&bull;`, `&larr;`)
+- Special characters use HTML entities (e.g., `&amp;copy;`, `&amp;bull;`, `&amp;larr;`, `&amp;rarr;`)
 - Icons use Tabler Icons React components (SVG-based)
-- Math symbols use KaTeX/LaTeX syntax
-- No UTF-8 characters beyond ASCII range
+- Math symbols use LaTeX syntax when rendering math
+- No UTF-8 characters beyond ASCII range (no emoji, no special Unicode)
 
 **Examples:**
-- Copyright: `&copy;` not `©`
-- Bullet: `&bull;` not `•`
-- Arrows: Use `IconArrowLeft` component, not `←` character
-- Math: Use `$$\int_0^T$$` not `∫₀ᵀ`
+- Copyright: `&amp;copy;` not `©`
+- Bullet: `&amp;bull;` not `•`
+- Arrows: Use `&lt;IconArrowLeft /&gt;` component, not `←` character
+- Arrows in text: `&amp;larr;` and `&amp;rarr;` not `←` and `→`
+
+**Why ASCII-only?**
+- Consistent rendering across all systems and editors
+- No encoding issues with Git, editors, or build tools
+- Explicit intent (HTML entities and React components are self-documenting)
+- Works correctly when embedded in Hugo site
+
+## React-Bootstrap Usage
+
+The apps use React-Bootstrap components in their default styling:
+
+**Common Components:**
+- `Form`, `Form.Control`, `Form.Group`, `Form.Label`
+- `Button`, `ButtonGroup`
+- `Card`, `Container`, `Row`, `Col`
+- `Alert`, `Badge`, `Tabs`, `Tab`
+
+**No Custom Theming:**
+- Apps use Bootstrap's default styling
+- No custom CSS beyond minimal layout adjustments
+- Theming is provided by the Hugo site when apps are embedded
+- This keeps the apps portable and theme-neutral
 
 ## Deployment
 
-The app is deployed as a static site (hosted at prometheus-alert-generator.com). Key files:
-- `public/404.html` - Custom 404 page for SPA routing
-- `public/robots.txt` - Search engine directives
-- `public/sitemap.xml` - Site map for SEO
-- `public/og-image.png` - Open Graph preview image
+The React apps are built as static SPAs and integrated into the Hugo marketing site:
 
-Build output goes to `dist/` and is gitignored.
+**Build Process:**
+1. Build each React app separately: `npm run build` (in `pag/` or `prc/`)
+2. Build output (`dist/`) is copied to Hugo's `hugo/static/pag/` and `hugo/static/prc/` directories
+3. Hugo site serves the React apps as static files
+4. Hugo landing pages link to or embed the apps
+
+**React App Build Output:**
+- `dist/` - Build output directory (gitignored in React app dirs)
+- `dist/index.html` - SPA entry point
+- `dist/assets/` - Bundled JS, CSS, and assets
+
+**Integration:**
+- Hugo site hosted at prometheus-alert-generator.com
+- React apps accessible at `/pag/` and `/prc/` routes
+- Apps pick up theming from Hugo site when embedded
+- See `hugo/CLAUDE.md` for Hugo deployment details
+
+## Common Tasks
+
+### Testing Locally
+
+1. Start the React app dev server:
+   ```bash
+   cd pag/  # or prc/
+   npm run dev
+   ```
+
+2. App runs at `http://localhost:5173` (or similar)
+
+3. Test independently of Hugo site
+
+### Building for Production
+
+1. Build the React app:
+   ```bash
+   cd pag/  # or prc/
+   npm run build
+   ```
+
+2. Copy `dist/` contents to Hugo:
+   ```bash
+   cp -r dist/* ../hugo/static/pag/  # or prc/
+   ```
+
+3. Build Hugo site (see `hugo/CLAUDE.md`)
+
+### Adding New Features
+
+1. Implement feature in React app (`src/` directory)
+2. Test locally with `npm run dev`
+3. Ensure forms use React-Bootstrap components
+4. Follow ASCII-only character encoding standards
+5. Build and deploy to Hugo site
+
+## File Structure Reference
+
+```
+pag/                          # Alert Generator React app
+├── src/
+│   ├── App.tsx              # Main application
+│   ├── prometheus-rule-generator.tsx  # Core generator logic
+│   ├── components/          # Reusable components
+│   └── ...
+├── public/                  # Static assets
+├── dist/                    # Build output (gitignored)
+├── package.json
+├── vite.config.ts
+└── tsconfig.*.json
+
+prc/                          # Resource Calculator React app
+├── src/
+│   ├── App.tsx              # Main application
+│   ├── ResourceCalculator.tsx  # Calculator logic
+│   ├── components/          # Reusable components
+│   └── ...
+├── public/                  # Static assets
+├── dist/                    # Build output (gitignored)
+├── package.json
+├── vite.config.ts
+└── tsconfig.*.json
+
+hugo/                         # Hugo marketing site (see hugo/CLAUDE.md)
+├── static/
+│   ├── pag/                 # Deployed Alert Generator
+│   └── prc/                 # Deployed Resource Calculator
+└── ...
+```

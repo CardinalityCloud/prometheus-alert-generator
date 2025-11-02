@@ -6,7 +6,9 @@ tags: ["faq", "slo", "burn-rate", "alerting"]
 description: "Understand how burn rate alerting provides early warnings and reduces alert fatigue."
 ---
 
-Burn rate alerting is a sophisticated approach to SLO monitoring that tracks how quickly you're consuming your error budget, rather than just alerting when you've already exhausted it. This provides several critical advantages:
+Traditional threshold alerts fire on every spike, creating alert fatigue. Burn rate alerting is different - it tracks how quickly you're consuming your error budget and only alerts when errors are sustained enough to threaten your reliability target. This gives you early warnings before user experience degrades, while dramatically reducing noise.
+
+<!--more-->
 
 ## Early Warning System
 
