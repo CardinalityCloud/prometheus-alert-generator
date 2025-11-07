@@ -134,12 +134,12 @@ rate(http_requests_total[5m])
 Use for counters that always increase. Handles counter resets.  Always
 normalized to per-second.
 
-**`irate()` - Instant rate (last 2 data points)**
+**`irate()` - Instant rate (last 2 samples within range)**
 ```promql
 irate(http_requests_total[5m])
 ```
-More sensitive to short-term spikes. Good for CPU metrics.  Normalized to
-per-second.
+Uses the last two samples within the time range. More sensitive to short-term
+spikes. Good for CPU metrics.  Normalized to per-second.
 
 **`increase()` - Total increase over time range**
 ```promql
@@ -156,7 +156,7 @@ Reduces many time series into fewer time series.
 |----------|-----------|---------|-------------|
 | `sum()` | Sum of all values | `sum(rate(http_requests_total[5m]))` | Sum all rates for system-wide throughput
 | `avg()` | Average of all values | `avg(rate(http_requests_total[5m]))` | Average rate of each container or pod
-| `min()` | Minimum value | `min(rate(http_requests_total[5m]))` | Lowest rate or throughput for each contanier or pod
+| `min()` | Minimum value | `min(rate(http_requests_total[5m]))` | Lowest rate or throughput for each container or pod
 | `max()` | Maximum value | `max(rate(http_requests_total[5m]))` | Highest rate or throughput for each container or pod
 | `count()` | Count of elements | `count(rate(http_requests_total[5m]))` | Number of active containers or pods
 | `stddev()` | Standard deviation | `stddev(rate(http_requests_total[5m]))` | How many seconds is 1 standard deviation assuming a normal distribution
@@ -325,9 +325,7 @@ node_filesystem_size_bytes
 
 Kubernetes PersistentVolume Metrics:
 ```promql
-100 * kubelet_volume_stats_available_bytes
-/
-kubelet_volume_stats_capacity_bytes
+100 * (1 - kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes)
 ```
 
 ### HTTP Error Rate
@@ -395,7 +393,7 @@ more than their assigned limit.
     severity: warning
   annotations:
     summary: "High CPU on {{ $labels.instance }}"
-    description: "CPU slices were throttled {{ $value | humanizePercentage }} over the last 10m"
+    description: "CPU slices were throttled {{ $value | humanizePercentage }} over the last 5m"
 ```
 
 ### High Memory Alert
