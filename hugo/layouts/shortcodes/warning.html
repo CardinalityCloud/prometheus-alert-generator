@@ -1,0 +1,21 @@
+{{- /* Warning Shortcode - Creates a red warning/caution box with alert icon */ -}}
+{{- /* Parameters: */ -}}
+{{- /*   - title (optional): Custom heading text (default: "Warning") */ -}}
+{{- /* */ -}}
+{{- /* Usage: */ -}}
+{{- /*   {{< warning >}} */ -}}
+{{- /*   Avoid high cardinality labels in production. */ -}}
+{{- /*   {{< /warning >}} */ -}}
+
+{{- $title := .Get "title" | default "Warning" -}}
+
+<div class="cheat-warning">
+  <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+    <div style="flex-shrink: 0; color: #dc3545; margin-top: 0.125rem;">
+      {{- partial "icon.html" (dict "name" "alert-triangle" "size" 20 "class" "icon") -}}
+    </div>
+    <div style="flex: 1; min-width: 0;">
+      <strong>{{ $title }}:</strong> {{ .Inner | markdownify }}
+    </div>
+  </div>
+</div>

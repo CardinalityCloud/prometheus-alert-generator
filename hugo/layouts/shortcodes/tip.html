@@ -1,0 +1,21 @@
+{{- /* Tip Shortcode - Creates a yellow tip/advice box with lightbulb icon */ -}}
+{{- /* Parameters: */ -}}
+{{- /*   - title (optional): Custom heading text (default: "Tip") */ -}}
+{{- /* */ -}}
+{{- /* Usage: */ -}}
+{{- /*   {{< tip >}} */ -}}
+{{- /*   Use rate() for alerting and long-term graphs. */ -}}
+{{- /*   {{< /tip >}} */ -}}
+
+{{- $title := .Get "title" | default "Tip" -}}
+
+<div class="cheat-tip">
+  <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+    <div style="flex-shrink: 0; color: #ffc107; margin-top: 0.125rem;">
+      {{- partial "icon.html" (dict "name" "bulb" "size" 20 "class" "icon") -}}
+    </div>
+    <div style="flex: 1; min-width: 0;">
+      <strong>{{ $title }}:</strong> {{ .Inner | markdownify }}
+    </div>
+  </div>
+</div>
