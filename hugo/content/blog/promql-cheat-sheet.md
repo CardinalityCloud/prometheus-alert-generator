@@ -193,6 +193,24 @@ argument.  Values returned are all in UTC.
 - `month()`             - Month (1-12)
 - `year()`              - Current year
 
+**Example - Repeating Test Patterns**
+
+```promql
+- alert: TestAlert
+  annotations:
+    description: |
+      This alert fires every 2 hours and resolves after 60 minutes.
+    runbook_url: https://example.com
+    summary: Test that alerts are working
+  expr: |
+    vector(1)
+    unless (
+      (hour() % 2 == 0)
+    )
+  labels:
+    severity: none
+```
+
 **Example - Alert only during business hours:**
 
 {{< warning title="Anti-Pattern" >}}
