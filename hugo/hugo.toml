@@ -20,8 +20,12 @@ summaryLength = 35
 [menu]
   [[menu.main]]
     name = 'Alert Generator'
-    url = '/pag/'
+    url = '/'
     weight = 10
+  [[menu.main]]
+    name = 'ROI Calculator'
+    url = 'https://cardinality.cloud/roi-calculator/'
+    weight = 15
   [[menu.main]]
     name = 'Resource Calculator'
     url = '/prc/'
@@ -55,6 +59,7 @@ summaryLength = 35
   # Social/external links
   [params.links]
     cardinalityCloud = 'https://cardinality.cloud/'
+    contact = 'https://cardinality.cloud/contact/'
     blog = 'https://cardinality.cloud/blog/'
     github = 'https://github.com/CardinalityCloud/prometheus-alert-generator'
     issues = 'https://github.com/CardinalityCloud/prometheus-alert-generator/issues'
