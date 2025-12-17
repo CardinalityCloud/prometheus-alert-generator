@@ -1,9 +1,9 @@
 ---
-title: "Put a Number on It: The ROI Calculator for Observability Strategy"
+title: "Put a Number on It: The ROI Calculator for Observability Architecture"
 date: 2025-12-05
 author: "Cardinality Cloud"
 tags: ["observability", "slo", "roi", "business"]
-description: "Calculate the ROI of investing in observability strategy vs. continuing to pay the observability vendor tax. For CFOs and SREs who want to know: is fixing this mess actually worth it?"
+description: "Calculate the ROI of investing in observability architecture vs. continuing to pay the observability vendor tax. For CFOs and SREs who want to know: is fixing this mess actually worth it?"
 draft: false
 ---
 
@@ -29,7 +29,7 @@ But observability doesn't have to be a tax. It should be an investment &mdash; o
 
 It's a fair question. Hiring a "Senior Principal DevOps Observability Architect" (yes, that's a real title I had) takes months and costs $200K+ annually. Maybe they'll fix it. Maybe they'll become part of the problem. It's a gamble.
 
-A focused observability strategy engagement costs a fraction of that senior hire, delivers results in weeks instead of months, and &mdash; here's the kicker &mdash; teaches your existing team how to fish instead of just giving them one.
+A focused observability architecture engagement costs a fraction of that senior hire, delivers results in weeks instead of months, and &mdash; here's the kicker &mdash; teaches your existing team how to fish instead of just giving them one.
 
 ## The SRE Math
 
@@ -48,7 +48,7 @@ The math adds up *fast*.
 
 ## The Long Game
 
-Here's what makes an observability strategy engagement different from throwing headcount at the problem:
+Here's what makes an observability architecture engagement different from throwing headcount at the problem:
 
 **Knowledge transfer is permanent.** Your team learns *why* certain metrics matter and others don't. They understand how to design SLOs that actually predict user pain. They can spot cardinality explosions before the observability bill does.
 
@@ -67,9 +67,9 @@ Plug in your numbers:
 - Engagement duration
 - Expected percentage reduction in observability spend
 
-Get back: a real comparison of strategy engagement cost vs. the alternative paths forward.
+Get back: a real comparison of architecture engagement cost vs. the alternative paths forward.
 
-No fluff. No "ROI is immeasurable because observability is priceless" nonsense. Just numbers.
+No "ROI is immeasurable because observability is priceless" nonsense. Just numbers.
 
 ## The Bottom Line
 
@@ -77,4 +77,4 @@ If you're an SRE: you already know this is broken. Now you have numbers to prove
 
 If you're a CFO: you already know something's expensive. Now you can see if fixing it pencils out.
 
-Either way, [run the calculator](https://cardinality.cloud/roi-calculator/). See if strategy beats the vendor subscription tax.
+Either way, [run the calculator](https://cardinality.cloud/roi-calculator/). See if architecture redesign beats the vendor subscription tax.
