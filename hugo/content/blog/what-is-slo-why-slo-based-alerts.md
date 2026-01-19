@@ -353,3 +353,16 @@ For a comprehensive practical guide, see Alex Hidalgo's [Implementing Service Le
 
 Additional resources:
 - [SLOs, SLIs, SLAs, oh my!](https://www.atlassian.com/incident-management/kpis/sla-vs-slo-vs-sli) - Atlassian's beginner-friendly overview
+
+## Ready to Transform Your Monitoring Strategy?
+
+Implementing SLO-based alerting requires deep expertise in Prometheus, observability architecture, and SRE best practices. Cardinality Cloud, LLC specializes in helping teams transition from reactive threshold-based monitoring to proactive, user-centric SLO alerting.
+
+**We can help you:**
+- Define meaningful SLOs aligned with business objectives
+- Implement multi-window burn rate alerting in Prometheus
+- Optimize recording rules for efficient SLI measurement
+- Design error budget policies and processes
+- Train your team on SRE fundamentals and SLO practices
+
+[Learn more about what we can do for you &rarr;](https://cardinality.cloud)
