@@ -4,6 +4,8 @@ date: 2026-02-02
 author: "Cardinality Cloud"
 tags: ["fundamentals", "metrics", "prometheus", "observability", "tsdb"]
 description: "A metric isn't just any number. It's a specific data type with strengths, weaknesses, and trade-offs. Learn how metrics work as pre-computed aggregations, why they're efficient, and when cardinality explosions happen."
+image: "blog/what-are-metrics-social.png"
+canonical: "https://cardinality.cloud/blog/what-are-metrics/"
 ---
 
 {{< youtube 73enppl5jSc >}}
