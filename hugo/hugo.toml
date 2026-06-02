@@ -1,5 +1,5 @@
 baseURL = 'https://prometheus-alert-generator.com/'
-languageCode = 'en-us'
+locale = 'en-us'
 title = 'Prometheus Alert Rule Generator & SLO Calculator | Free SRE Tool'
 
 # Google Analytics

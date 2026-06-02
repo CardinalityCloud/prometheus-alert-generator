@@ -22,7 +22,7 @@ defaults:
 env:
   # What region to make AWS API calls against
   AWS_REGION: us-east-2
-  HUGO_VERSION: 0.150.1
+  HUGO_VERSION: 0.162.1
 
 permissions:
   id-token: write   # This is required for requesting the JWT
