@@ -117,3 +117,5 @@ Deploy `hugo/public/` to your web host. This includes:
 ### License
 
 Apache 2.0 - See LICENSE file
+
+August 05, 2026
