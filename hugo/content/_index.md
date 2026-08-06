@@ -23,4 +23,8 @@ error budget based alerts that catch issues before they breach your SLO
 * Reduces alert fatigue and increases MTTR by generating highly reliable burn
   rate alerts.
 
+On-call for the team? Alert fatigue? Burnout? Check out my [new book][2] for
+fixing on-call and keeping it sane.
+
 [1]: /blog/what-is-slo-why-slo-based-alerts/
+[2]: https://cardinality.cloud/observability-practitioner-series/
