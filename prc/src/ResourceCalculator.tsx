@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Container, Card, Button, Badge, Form } from 'react-bootstrap';
+import { Container, Card, Badge, Form } from 'react-bootstrap';
 import * as Plot from '@observablehq/plot';
 import { InfoBox } from './components/InfoBox';
 
@@ -7,7 +7,6 @@ export function ResourceCalculator() {
   const [timeSeriesInput, setTimeSeriesInput] = useState<number | string>('');
   const [scrapeInterval, setScrapeInterval] = useState<number | string>(60);
   const [retentionDays, setRetentionDays] = useState<number | string>(30);
-  const [userTimeSeries, setUserTimeSeries] = useState<number | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
 
   // Base data points for the chart
@@ -24,8 +23,29 @@ export function ResourceCalculator() {
     { timeSeries: 10000000, memoryGB: (10000000 * 7.5) / (1024 * 1024) },
   ];
 
+  // Parse and validate inputs. Results update live as the user types.
+  const parseInput = (value: number | string) =>
+    typeof value === 'string' && value.trim() === '' ? NaN : Number(value);
+  const timeSeriesValue = parseInput(timeSeriesInput);
+  const scrapeIntervalValue = parseInput(scrapeInterval);
+  const retentionDaysValue = parseInput(retentionDays);
+
+  const timeSeriesError = timeSeriesInput === '' ? null
+    : !Number.isInteger(timeSeriesValue) ? 'Enter a whole number of time series'
+    : timeSeriesValue < 1000 ? 'Enter at least 1,000 time series'
+    : null;
+  const scrapeIntervalError = !Number.isFinite(scrapeIntervalValue) ? 'Enter a scrape interval in seconds'
+    : scrapeIntervalValue < 1 ? 'Scrape interval must be at least 1 second'
+    : null;
+  const retentionDaysError = !Number.isFinite(retentionDaysValue) ? 'Enter a retention period in days'
+    : retentionDaysValue < 1 ? 'Retention period must be at least 1 day'
+    : null;
+
+  const userTimeSeries = timeSeriesInput !== '' && !timeSeriesError ? timeSeriesValue : null;
+  const inputsValid = userTimeSeries !== null && !scrapeIntervalError && !retentionDaysError;
+
   // User's specific point for highlighting
-  const userPoint = userTimeSeries && userTimeSeries >= 1000 ? {
+  const userPoint = inputsValid ? {
     timeSeries: userTimeSeries,
     memoryGB: (userTimeSeries * 7.5) / (1024 * 1024),
     minMemoryGB: (userTimeSeries * 7) / (1024 * 1024),
@@ -36,7 +56,7 @@ export function ResourceCalculator() {
     // Total samples = timeSeries * samples per series
     // Bytes = total samples * 1.5 bytes per sample
     // Add 20% buffer for WAL (Write-Ahead Log)
-    diskSpaceGB: (userTimeSeries * (Number(retentionDays) * 86400 / Number(scrapeInterval)) * 1.5) / (1024 * 1024 * 1024) * 1.2,
+    diskSpaceGB: (userTimeSeries * (retentionDaysValue * 86400 / scrapeIntervalValue) * 1.5) / (1024 * 1024 * 1024) * 1.2,
   } : null;
 
   // Render chart with Observable Plot
@@ -47,7 +67,7 @@ export function ResourceCalculator() {
     chartRef.current.innerHTML = '';
 
     // Extend time series points if user input exceeds max
-    let timeSeriesPoints = [...baseTimeSeriesPoints];
+    const timeSeriesPoints = [...baseTimeSeriesPoints];
     if (userPoint && userPoint.timeSeries > 10000000) {
       const maxPoint = Math.ceil(userPoint.timeSeries * 1.5);
       timeSeriesPoints.push(userPoint.timeSeries, maxPoint);
@@ -185,20 +205,7 @@ export function ResourceCalculator() {
     });
 
     chartRef.current.appendChild(plot);
-  }, [userTimeSeries]);
-
-  const handleCalculate = () => {
-    const value = typeof timeSeriesInput === 'number' ? timeSeriesInput : parseInt(timeSeriesInput);
-    if (value && value >= 1000) {
-      setUserTimeSeries(value);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleCalculate();
-    }
-  };
+  }, [userTimeSeries, inputsValid]);
 
   return (
     <div>
@@ -222,9 +229,12 @@ export function ResourceCalculator() {
                         step={1000}
                         value={timeSeriesInput}
                         onChange={(e) => setTimeSeriesInput(e.target.value)}
-                        onKeyPress={handleKeyPress}
+                        isInvalid={!!timeSeriesError}
                         required
                       />
+                      <Form.Control.Feedback type="invalid">
+                        {timeSeriesError}
+                      </Form.Control.Feedback>
                       <small className="text-muted">
                         The number of unique time series your Prometheus instance tracks
                       </small>
@@ -239,8 +249,11 @@ export function ResourceCalculator() {
                           step={1}
                           value={scrapeInterval}
                           onChange={(e) => setScrapeInterval(e.target.value)}
-                          onKeyPress={handleKeyPress}
+                          isInvalid={!!scrapeIntervalError}
                         />
+                        <Form.Control.Feedback type="invalid">
+                          {scrapeIntervalError}
+                        </Form.Control.Feedback>
                         <small className="text-muted">
                           How often Prometheus scrapes metrics
                         </small>
@@ -253,27 +266,17 @@ export function ResourceCalculator() {
                           step={1}
                           value={retentionDays}
                           onChange={(e) => setRetentionDays(e.target.value)}
-                          onKeyPress={handleKeyPress}
+                          isInvalid={!!retentionDaysError}
                         />
+                        <Form.Control.Feedback type="invalid">
+                          {retentionDaysError}
+                        </Form.Control.Feedback>
                         <small className="text-muted">
                           How long to keep historical data
                         </small>
                       </div>
                     </div>
 
-                    <Button
-                      variant="primary"
-                      size="lg"
-                      onClick={handleCalculate}
-                      disabled={!timeSeriesInput || (typeof timeSeriesInput === 'string' && timeSeriesInput.trim() === '') || Number(timeSeriesInput) < 1000}
-                      style={{
-                        transition: 'transform 0.2s',
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                      onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                    >
-                      Calculate
-                    </Button>
                   </div>
                 </div>
 
