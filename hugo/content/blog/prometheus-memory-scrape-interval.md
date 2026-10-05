@@ -181,8 +181,8 @@ time series, scrape interval, and retention. What comes back is different.
 - **Show the math.** "Show calculation" walks through every step with your
   numbers plugged in.
 - **A better chart.** Memory limit, request, and working set plotted against
-  active series on log scales, with the GKE fleet regression drawn as a band
-  so you can see where the model sits.
+  active series on log scales, so you can see how memory grows as you
+  scale.
 
 CPU is still a rough guide based on GCP VM memory to CPU ratios. It tends to
 over forecast, and I'm leaving it alone for now.

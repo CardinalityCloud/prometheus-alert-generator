@@ -133,7 +133,7 @@ export const DEFAULT_CONSTANTS = Object.fromEntries(
   CONSTANT_FIELDS.map((f) => [f.key, f.defaultValue]),
 ) as unknown as SizingConstants;
 
-// Fleet regression band, used by tests and drawn on the chart.
+// Fleet regression band the 60s memory limit must stay within. Checked in tests.
 export const FLEET_BAND_KIB = { low: 6.5, high: 7.5 };
 
 /** Round up to a multiple of step, ignoring floating point dust. */

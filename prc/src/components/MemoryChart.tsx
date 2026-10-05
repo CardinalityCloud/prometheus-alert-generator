@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import * as Plot from '@observablehq/plot';
-import { FLEET_BAND_KIB, GIB, KIB, memoryModel } from '../sizing';
+import { GIB, KIB, memoryModel } from '../sizing';
 import type { SizingConstants } from '../sizing';
 
 // Real use cases, drawn as reference dots.
@@ -15,7 +15,6 @@ const COLORS = {
   limit: '#12b886',
   request: '#7950f2',
   workingSet: '#868e96',
-  band: '#38d9a9',
   example: '#1971c2',
   user: '#fa5252',
 };
@@ -55,8 +54,6 @@ export function MemoryChart({ constants, scrapeIntervalSec, userSeries }: Memory
         requestGiB: (limitGiB * constants.requestPercent) / 100,
         workingSetGiB: m.workingSetBytes / GIB,
         kibPerSeries: m.limitBytes / series / KIB,
-        bandLow: (series * FLEET_BAND_KIB.low * KIB) / GIB,
-        bandHigh: (series * FLEET_BAND_KIB.high * KIB) / GIB,
       };
     };
 
@@ -66,8 +63,8 @@ export function MemoryChart({ constants, scrapeIntervalSec, userSeries }: Memory
     const examples = EXAMPLE_SERIES.map(point);
     const userPoint = userSeries ? point(userSeries) : null;
 
-    const yMin = Math.min(...curve.map((d) => Math.min(d.workingSetGiB, d.bandLow))) * 0.9;
-    const yMax = Math.max(...curve.map((d) => Math.max(d.limitGiB, d.bandHigh))) * 1.1;
+    const yMin = Math.min(...curve.map((d) => d.workingSetGiB)) * 0.9;
+    const yMax = Math.max(...curve.map((d) => d.limitGiB)) * 1.1;
     const yTicks = Y_TICKS.filter((t) => t >= yMin && t <= yMax);
     const xTicks = TICKS.filter((t) => t >= minSeries && t <= maxSeries);
 
@@ -78,9 +75,6 @@ export function MemoryChart({ constants, scrapeIntervalSec, userSeries }: Memory
       + `Working set: ${d.workingSetGiB.toFixed(1)} GiB`;
 
     const marks: Plot.Markish[] = [
-      Plot.areaY(curve, {
-        x: 'series', y1: 'bandLow', y2: 'bandHigh', fill: COLORS.band, fillOpacity: 0.2,
-      }),
       Plot.line(curve, {
         x: 'series', y: 'workingSetGiB', stroke: COLORS.workingSet, strokeWidth: 1.5,
       }),
@@ -149,10 +143,6 @@ export function MemoryChart({ constants, scrapeIntervalSec, userSeries }: Memory
         {swatch({ width: 30, height: 3, backgroundColor: COLORS.limit, borderRadius: 2 }, 'Memory limit')}
         {swatch({ width: 30, height: 0, borderTop: `2px dashed ${COLORS.request}` }, 'Memory request')}
         {swatch({ width: 30, height: 2, backgroundColor: COLORS.workingSet }, 'Working set')}
-        {swatch(
-          { width: 30, height: 12, backgroundColor: COLORS.band, opacity: 0.35 },
-          `GKE fleet regression at 60s, ${FLEET_BAND_KIB.low} to ${FLEET_BAND_KIB.high} KiB per series`,
-        )}
         {swatch({ width: 8, height: 8, backgroundColor: COLORS.example, borderRadius: '50%' }, 'Example configurations')}
         {userSeries && swatch({
           width: 12, height: 12, backgroundColor: COLORS.user, borderRadius: '50%',
