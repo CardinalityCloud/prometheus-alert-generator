@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Container, Card, Badge, Button, Collapse, Form, Table } from 'react-bootstrap';
+import { IconCalculator, IconChevronDown, IconChevronUp } from '@tabler/icons-react';
 import { InfoBox } from './components/InfoBox';
 import { AssumptionsPanel } from './components/AssumptionsPanel';
 import { MemoryChart } from './components/MemoryChart';
@@ -113,14 +114,17 @@ export function ResourceCalculator() {
                     <Results inputs={inputs} constants={constants} result={result} />
                     <div className="pt-3">
                       <Button
-                        variant="link"
+                        variant="outline-primary"
                         size="sm"
-                        className="p-0"
                         onClick={() => setShowCalculation(!showCalculation)}
                         aria-expanded={showCalculation}
                         aria-controls="calculation-steps"
                       >
-                        {showCalculation ? 'Hide calculation' : 'Show calculation'}
+                        <IconCalculator size={16} className="me-2" />
+                        Show calculation
+                        {showCalculation
+                          ? <IconChevronUp size={16} className="ms-2" />
+                          : <IconChevronDown size={16} className="ms-2" />}
                       </Button>
                       <Collapse in={showCalculation}>
                         <div id="calculation-steps">
