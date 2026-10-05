@@ -1,211 +1,36 @@
-import { useState, useEffect, useRef } from 'react';
-import { Container, Card, Badge, Form } from 'react-bootstrap';
-import * as Plot from '@observablehq/plot';
+import { useEffect, useMemo, useState } from 'react';
+import { Container, Card, Badge, Button, Collapse, Form, Table } from 'react-bootstrap';
 import { InfoBox } from './components/InfoBox';
+import { AssumptionsPanel } from './components/AssumptionsPanel';
+import { MemoryChart } from './components/MemoryChart';
+import { computeSizing, formatBytes, formatGi, GIB, KIB } from './sizing';
+import type { ConstantKey, SizingConstants, SizingInputs, SizingResult } from './sizing';
+import { DEFAULT_CONSTANT_STRINGS, readFormState, validateForm, writeFormState } from './formState';
+import type { FormState } from './formState';
+
+const fmt = (n: number, digits = 0) =>
+  n.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 
 export function ResourceCalculator() {
-  const [timeSeriesInput, setTimeSeriesInput] = useState<number | string>('');
-  const [scrapeInterval, setScrapeInterval] = useState<number | string>(60);
-  const [retentionDays, setRetentionDays] = useState<number | string>(30);
-  const chartRef = useRef<HTMLDivElement>(null);
+  const [form, setForm] = useState<FormState>(() => readFormState(window.location.search));
+  const [showCalculation, setShowCalculation] = useState(false);
+  const validated = useMemo(() => validateForm(form), [form]);
+  const { inputs, constants, errors } = validated;
+  const result = inputs && constants ? computeSizing(inputs, constants) : null;
 
-  // Base data points for the chart
-  const baseTimeSeriesPoints = [1000, 5000, 10000, 50000, 100000, 500000, 1000000, 2000000, 5000000, 10000000];
-
-  // Example configuration points (to show as dots)
-  const examplePoints = [
-    { timeSeries: 100000, memoryGB: (100000 * 7.5) / (1024 * 1024) },
-    { timeSeries: 200000, memoryGB: (200000 * 7.5) / (1024 * 1024) },
-    { timeSeries: 500000, memoryGB: (500000 * 7.5) / (1024 * 1024) },
-    { timeSeries: 1000000, memoryGB: (1000000 * 7.5) / (1024 * 1024) },
-    { timeSeries: 2000000, memoryGB: (2000000 * 7.5) / (1024 * 1024) },
-    { timeSeries: 5000000, memoryGB: (5000000 * 7.5) / (1024 * 1024) },
-    { timeSeries: 10000000, memoryGB: (10000000 * 7.5) / (1024 * 1024) },
-  ];
-
-  // Parse and validate inputs. Results update live as the user types.
-  const parseInput = (value: number | string) =>
-    typeof value === 'string' && value.trim() === '' ? NaN : Number(value);
-  const timeSeriesValue = parseInput(timeSeriesInput);
-  const scrapeIntervalValue = parseInput(scrapeInterval);
-  const retentionDaysValue = parseInput(retentionDays);
-
-  const timeSeriesError = timeSeriesInput === '' ? null
-    : !Number.isInteger(timeSeriesValue) ? 'Enter a whole number of time series'
-    : timeSeriesValue < 1000 ? 'Enter at least 1,000 time series'
-    : null;
-  const scrapeIntervalError = !Number.isFinite(scrapeIntervalValue) ? 'Enter a scrape interval in seconds'
-    : scrapeIntervalValue < 1 ? 'Scrape interval must be at least 1 second'
-    : null;
-  const retentionDaysError = !Number.isFinite(retentionDaysValue) ? 'Enter a retention period in days'
-    : retentionDaysValue < 1 ? 'Retention period must be at least 1 day'
-    : null;
-
-  const userTimeSeries = timeSeriesInput !== '' && !timeSeriesError ? timeSeriesValue : null;
-  const inputsValid = userTimeSeries !== null && !scrapeIntervalError && !retentionDaysError;
-
-  // User's specific point for highlighting
-  const userPoint = inputsValid ? {
-    timeSeries: userTimeSeries,
-    memoryGB: (userTimeSeries * 7.5) / (1024 * 1024),
-    minMemoryGB: (userTimeSeries * 7) / (1024 * 1024),
-    maxMemoryGB: (userTimeSeries * 9) / (1024 * 1024),
-    cpuCores: Math.max(2, Math.round((userTimeSeries * 7.5) / (1024 * 1024) / 4)),
-    // Disk space calculation: samples * bytes per sample / GB conversion
-    // Samples per series = (retentionDays * 86400 seconds/day) / scrapeInterval
-    // Total samples = timeSeries * samples per series
-    // Bytes = total samples * 1.5 bytes per sample
-    // Add 20% buffer for WAL (Write-Ahead Log)
-    diskSpaceGB: (userTimeSeries * (retentionDaysValue * 86400 / scrapeIntervalValue) * 1.5) / (1024 * 1024 * 1024) * 1.2,
-  } : null;
-
-  // Render chart with Observable Plot
+  // Keep the query string in sync so the page can be bookmarked or shared.
   useEffect(() => {
-    if (!chartRef.current) return;
+    const url = window.location.pathname + writeFormState(form) + window.location.hash;
+    window.history.replaceState(window.history.state, '', url);
+  }, [form]);
 
-    // Clear previous chart
-    chartRef.current.innerHTML = '';
+  const setField = (field: 'activeSeries' | 'scrapeInterval' | 'retentionDays', value: string) =>
+    setForm((f) => ({ ...f, [field]: value }));
+  const setConstant = (key: ConstantKey, value: string) =>
+    setForm((f) => ({ ...f, constants: { ...f.constants, [key]: value } }));
+  const resetConstants = () => setForm((f) => ({ ...f, constants: DEFAULT_CONSTANT_STRINGS }));
 
-    // Extend time series points if user input exceeds max
-    const timeSeriesPoints = [...baseTimeSeriesPoints];
-    if (userPoint && userPoint.timeSeries > 10000000) {
-      const maxPoint = Math.ceil(userPoint.timeSeries * 1.5);
-      timeSeriesPoints.push(userPoint.timeSeries, maxPoint);
-      timeSeriesPoints.sort((a, b) => a - b);
-    }
-
-    // Generate line data
-    const recommendedLine = timeSeriesPoints.map(ts => ({
-      timeSeries: ts,
-      memoryGB: (ts * 7.5) / (1024 * 1024)
-    }));
-
-    const lowerBound = timeSeriesPoints.map(ts => ({
-      timeSeries: ts,
-      memoryGB: (ts * 7) / (1024 * 1024)
-    }));
-
-    const upperBound = timeSeriesPoints.map(ts => ({
-      timeSeries: ts,
-      memoryGB: (ts * 9) / (1024 * 1024)
-    }));
-
-    const marks = [
-      // Shaded area between bounds
-      Plot.areaY(timeSeriesPoints.map((ts, i) => ({
-        timeSeries: ts,
-        lower: lowerBound[i].memoryGB,
-        upper: upperBound[i].memoryGB
-      })), {
-        x: "timeSeries",
-        y1: "lower",
-        y2: "upper",
-        fill: "#38d9a9",
-        fillOpacity: 0.2
-      }),
-
-      // Lower bound line (7 KiB)
-      Plot.line(lowerBound, {
-        x: "timeSeries",
-        y: "memoryGB",
-        stroke: "#38d9a9",
-        strokeOpacity: 0.4,
-        strokeWidth: 1.5,
-        strokeDasharray: "4,4"
-      }),
-
-      // Upper bound line (9 KiB)
-      Plot.line(upperBound, {
-        x: "timeSeries",
-        y: "memoryGB",
-        stroke: "#38d9a9",
-        strokeOpacity: 0.4,
-        strokeWidth: 1.5,
-        strokeDasharray: "4,4"
-      }),
-
-      // Recommended line (7.5 KiB) - prominent
-      Plot.line(recommendedLine, {
-        x: "timeSeries",
-        y: "memoryGB",
-        stroke: "#12b886",
-        strokeWidth: 2.5
-      }),
-
-      // Example points
-      Plot.dot(examplePoints, {
-        x: "timeSeries",
-        y: "memoryGB",
-        fill: "#1971c2",
-        r: 5,
-        title: (d) => `${formatNumber(d.timeSeries)} time series\nRecommended: ${d.memoryGB.toFixed(2)} GB\nSafe Range: ${((d.timeSeries * 7) / (1024 * 1024)).toFixed(2)} - ${((d.timeSeries * 9) / (1024 * 1024)).toFixed(2)} GB`
-      }),
-
-      // Zero rule
-      Plot.ruleY([0])
-    ];
-
-    // Add user point if it exists
-    if (userPoint) {
-      marks.push(
-        Plot.dot([userPoint], {
-          x: "timeSeries",
-          y: "memoryGB",
-          fill: "#fa5252",
-          r: 7,
-          stroke: "white",
-          strokeWidth: 2,
-          title: (d) => `${formatNumber(d.timeSeries)} time series (Your Config)\nRecommended: ${d.memoryGB.toFixed(2)} GB\nSafe Range: ${d.minMemoryGB.toFixed(2)} - ${d.maxMemoryGB.toFixed(2)} GB\nCPU Cores: ${d.cpuCores}`
-        })
-      );
-    }
-
-    // Calculate dynamic domains
-    let maxMemory = 80;
-    let maxTimeSeries = 10000000;
-
-    if (userPoint) {
-      if (userPoint.memoryGB > maxMemory) {
-        maxMemory = Math.ceil(userPoint.memoryGB * 1.2);
-      }
-      if (userPoint.timeSeries > maxTimeSeries) {
-        maxTimeSeries = Math.ceil(userPoint.timeSeries * 1.5);
-      }
-    }
-
-    const formatNumber = (d: number) => {
-      if (d >= 1000000) return `${(d / 1000000).toFixed(1)}M`;
-      if (d >= 1000) return `${(d / 1000).toFixed(0)}K`;
-      return d.toString();
-    };
-
-    const plot = Plot.plot({
-      marks: marks,
-      x: {
-        type: "log",
-        label: "Active Time Series",
-        grid: true,
-        domain: [1000, maxTimeSeries],
-        tickFormat: formatNumber
-      },
-      y: {
-        label: "Memory Required (GB)",
-        grid: true,
-        domain: [0, maxMemory]
-      },
-      marginLeft: 60,
-      marginBottom: 50,
-      marginTop: 30,
-      width: chartRef.current.clientWidth,
-      height: 500,
-      style: {
-        fontSize: "13px",
-        background: "white"
-      }
-    });
-
-    chartRef.current.appendChild(plot);
-  }, [userTimeSeries, inputsValid]);
+  const chartInterval = errors.scrapeInterval ? null : Number(form.scrapeInterval);
 
   return (
     <div>
@@ -219,98 +44,100 @@ export function ResourceCalculator() {
                   <div className="d-flex flex-column gap-3">
                     <div>
                       <div className="d-flex gap-2 align-items-center mb-2">
-                        <label className="form-label mb-0 fw-semibold">Active Time Series</label>
+                        <label className="form-label mb-0 fw-semibold" htmlFor="active-series">Active Time Series</label>
                         <Badge bg="danger">Required</Badge>
                       </div>
                       <Form.Control
+                        id="active-series"
                         type="number"
-                        placeholder="e.g., 250000"
+                        placeholder="e.g., 2000000"
                         min={1000}
                         step={1000}
-                        value={timeSeriesInput}
-                        onChange={(e) => setTimeSeriesInput(e.target.value)}
-                        isInvalid={!!timeSeriesError}
+                        value={form.activeSeries}
+                        onChange={(e) => setField('activeSeries', e.target.value)}
+                        isInvalid={!!errors.activeSeries}
                         required
                       />
                       <Form.Control.Feedback type="invalid">
-                        {timeSeriesError}
+                        {errors.activeSeries}
                       </Form.Control.Feedback>
                       <small className="text-muted">
                         The number of unique time series your Prometheus instance tracks
+                        (<code>prometheus_tsdb_head_series</code>)
                       </small>
                     </div>
 
                     <div className="d-flex gap-3 flex-wrap">
                       <div style={{ flex: 1, minWidth: '250px' }}>
-                        <label className="form-label fw-semibold">Scrape Interval (seconds)</label>
+                        <label className="form-label fw-semibold" htmlFor="scrape-interval">Scrape Interval (seconds)</label>
                         <Form.Control
+                          id="scrape-interval"
                           type="number"
                           min={1}
                           step={1}
-                          value={scrapeInterval}
-                          onChange={(e) => setScrapeInterval(e.target.value)}
-                          isInvalid={!!scrapeIntervalError}
+                          value={form.scrapeInterval}
+                          onChange={(e) => setField('scrapeInterval', e.target.value)}
+                          isInvalid={!!errors.scrapeInterval}
                         />
                         <Form.Control.Feedback type="invalid">
-                          {scrapeIntervalError}
+                          {errors.scrapeInterval}
                         </Form.Control.Feedback>
                         <small className="text-muted">
                           How often Prometheus scrapes metrics
                         </small>
                       </div>
                       <div style={{ flex: 1, minWidth: '250px' }}>
-                        <label className="form-label fw-semibold">Retention Period (days)</label>
+                        <label className="form-label fw-semibold" htmlFor="retention-days">Retention Period (days)</label>
                         <Form.Control
+                          id="retention-days"
                           type="number"
                           min={1}
                           step={1}
-                          value={retentionDays}
-                          onChange={(e) => setRetentionDays(e.target.value)}
-                          isInvalid={!!retentionDaysError}
+                          value={form.retentionDays}
+                          onChange={(e) => setField('retentionDays', e.target.value)}
+                          isInvalid={!!errors.retentionDays}
                         />
                         <Form.Control.Feedback type="invalid">
-                          {retentionDaysError}
+                          {errors.retentionDays}
                         </Form.Control.Feedback>
                         <small className="text-muted">
-                          How long to keep historical data
+                          How long to keep data on disk
                         </small>
                       </div>
                     </div>
-
                   </div>
                 </div>
 
-                {userPoint && (
+                {result && inputs && constants && (
                   <InfoBox>
-                    <div className="d-flex flex-column gap-2">
-                      <h5 className="fw-bold">
-                        For {userTimeSeries?.toLocaleString()} active time series:
-                      </h5>
-                      <div className="d-flex gap-4 flex-wrap">
-                        <div>
-                          <small className="text-muted">Recommended Memory</small>
-                          <h3 className="fw-bold mb-0">{userPoint.memoryGB.toFixed(2)} GB</h3>
+                    <Results inputs={inputs} constants={constants} result={result} />
+                    <div className="pt-3">
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="p-0"
+                        onClick={() => setShowCalculation(!showCalculation)}
+                        aria-expanded={showCalculation}
+                        aria-controls="calculation-steps"
+                      >
+                        {showCalculation ? 'Hide calculation' : 'Show calculation'}
+                      </Button>
+                      <Collapse in={showCalculation}>
+                        <div id="calculation-steps">
+                          <CalculationSteps inputs={inputs} constants={constants} result={result} />
                         </div>
-                        <div>
-                          <small className="text-muted">Safe Range</small>
-                          <h3 className="fw-bold mb-0">{userPoint.minMemoryGB.toFixed(2)} GB - {userPoint.maxMemoryGB.toFixed(2)} GB</h3>
-                        </div>
-                        <div>
-                          <small className="text-muted">Recommended CPU Cores</small>
-                          <h3 className="fw-bold mb-0">{userPoint.cpuCores}</h3>
-                        </div>
-                        <div>
-                          <small className="text-muted">Disk Space Required</small>
-                          <h3 className="fw-bold mb-0">
-                            {userPoint.diskSpaceGB >= 1024
-                              ? `${(userPoint.diskSpaceGB / 1024).toFixed(2)} TB`
-                              : `${userPoint.diskSpaceGB.toFixed(2)} GB`}
-                          </h3>
-                        </div>
-                      </div>
+                      </Collapse>
                     </div>
                   </InfoBox>
                 )}
+
+                <AssumptionsPanel
+                  values={form.constants}
+                  errors={errors.constants}
+                  modified={validated.modified}
+                  onChange={setConstant}
+                  onReset={resetConstants}
+                />
               </div>
             </Card.Body>
           </Card>
@@ -318,65 +145,133 @@ export function ResourceCalculator() {
           <Card className="shadow-sm">
             <Card.Body className="p-4">
               <div className="d-flex flex-column gap-3">
-                <h5 className="fw-semibold">Memory Requirements by Time Series</h5>
-
-                <div ref={chartRef} style={{ width: '100%', overflow: 'auto' }} />
-
-                <Card bg="light" border="light">
-                  <Card.Body>
-                    <div className="d-flex flex-column gap-2">
-                      <small className="fw-semibold">Legend</small>
-                      <div className="d-flex gap-4 flex-wrap">
-                        <div className="d-flex gap-2 align-items-center">
-                          <div style={{
-                            width: 30,
-                            height: 3,
-                            backgroundColor: '#12b886',
-                            borderRadius: 2
-                          }} />
-                          <small>Recommended: 7.5 KiB per series</small>
-                        </div>
-                        <div className="d-flex gap-2 align-items-center">
-                          <div style={{
-                            width: 30,
-                            height: 2,
-                            border: '1px dashed #38d9a9',
-                            borderTop: 'none',
-                            borderBottom: 'none'
-                          }} />
-                          <small>Safe Range (7-9 KiB per series)</small>
-                        </div>
-                        <div className="d-flex gap-2 align-items-center">
-                          <div style={{
-                            width: 8,
-                            height: 8,
-                            backgroundColor: '#1971c2',
-                            borderRadius: '50%'
-                          }} />
-                          <small>Example configurations</small>
-                        </div>
-                        {userPoint && (
-                          <div className="d-flex gap-2 align-items-center">
-                            <div style={{
-                              width: 12,
-                              height: 12,
-                              backgroundColor: '#fa5252',
-                              borderRadius: '50%',
-                              border: '2px solid white',
-                              boxShadow: '0 0 0 1px #fa5252'
-                            }} />
-                            <small className="fw-semibold text-danger">Your configuration</small>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </Card.Body>
-                </Card>
+                <h5 className="fw-semibold mb-0">Memory Requirements by Time Series</h5>
+                <small className="text-muted">
+                  Holding the scrape interval and assumptions constant. Hover over a dot for details.
+                </small>
+                {constants && chartInterval ? (
+                  <MemoryChart
+                    constants={constants}
+                    scrapeIntervalSec={chartInterval}
+                    userSeries={inputs?.activeSeries ?? null}
+                  />
+                ) : (
+                  <small className="text-muted">Fix the highlighted values to see the chart.</small>
+                )}
               </div>
             </Card.Body>
           </Card>
         </div>
       </Container>
     </div>
+  );
+}
+
+interface ResultProps {
+  inputs: SizingInputs;
+  constants: SizingConstants;
+  result: SizingResult;
+}
+
+function Stat({ label, value, note }: { label: string; value: string; note?: string }) {
+  return (
+    <div>
+      <small className="text-muted">{label}</small>
+      <h3 className="fw-bold mb-0">{value}</h3>
+      {note && <small className="text-muted">{note}</small>}
+    </div>
+  );
+}
+
+function Results({ inputs, constants, result: r }: ResultProps) {
+  const manifest = [
+    'resources:',
+    '  requests:',
+    `    cpu: "${r.cpuCores}"`,
+    `    memory: ${formatGi(r.requestGi)}`,
+    '  limits:',
+    `    memory: ${formatGi(r.limitGi)}`,
+    'env:',
+    '  - name: GOMEMLIMIT',
+    `    value: ${r.gomemlimitMiB}MiB`,
+  ].join('\n');
+
+  return (
+    <div className="d-flex flex-column gap-3">
+      <h5 className="fw-bold mb-0">
+        For {fmt(inputs.activeSeries)} active time series at {fmt(inputs.scrapeIntervalSec)}s
+        with {fmt(inputs.retentionDays)} days of retention:
+      </h5>
+      <div className="d-flex gap-4 flex-wrap">
+        <Stat
+          label="Memory Limit"
+          value={formatGi(r.limitGi)}
+          note={`${fmt(r.limitBytes / inputs.activeSeries / KIB, 2)} KiB per series`}
+        />
+        <Stat label="Memory Request" value={formatGi(r.requestGi)} note={`${constants.requestPercent}% of limit`} />
+        <Stat label="GOMEMLIMIT" value={`${fmt(r.gomemlimitMiB)}MiB`} note={`${constants.gomemlimitPercent}% of limit`} />
+        <Stat
+          label="Disk (PV size)"
+          value={`${fmt(r.diskGi)}Gi`}
+          note={r.diskGi >= 1024 ? `${fmt(r.diskGi / 1024, 2)} TiB` : undefined}
+        />
+        <Stat label="CPU Cores" value={String(r.cpuCores)} note="Rough guide" />
+      </div>
+      <div>
+        <small className="text-muted">Kubernetes container settings:</small>
+        <pre className="border rounded p-2 mb-1 small">{manifest}</pre>
+        <small className="text-muted">
+          Prometheus 3.x sets GOMEMLIMIT for you with <code>--auto-gomemlimit</code> at a ratio
+          of 0.9. To match this model, pass{' '}
+          <code>--auto-gomemlimit.ratio={(constants.gomemlimitPercent / 100).toFixed(2)}</code>{' '}
+          instead of setting the variable. CPU is a rough guide based on GCP VM memory to CPU
+          ratios and tends to over forecast.
+        </small>
+      </div>
+    </div>
+  );
+}
+
+function CalculationSteps({ inputs, constants: c, result: r }: ResultProps) {
+  const S = fmt(inputs.activeSeries);
+  const rows: [string, string, string][] = [
+    ['Head samples per series', `${c.headWindowHours} h x 3600 / ${inputs.scrapeIntervalSec}s`, fmt(r.headSamplesPerSeries, 1)],
+    ['Bytes per series', `${c.indexBytesPerSeries} B + ${fmt(r.headSamplesPerSeries, 1)} x ${c.memoryBytesPerSample} B`, `${fmt(r.bytesPerSeries)} B`],
+    ['Base heap', `${S} series x ${fmt(r.bytesPerSeries)} B`, formatBytes(r.baseHeapBytes)],
+    ['Working set', `base heap x ${c.operationalMultiplier}`, formatBytes(r.workingSetBytes)],
+    ['Safety buffer', `working set x ${c.safetyMultiplier}`, formatBytes(r.safetyBufferBytes)],
+    ['Minimum buffer', `working set + ${c.minBufferGiB} GiB`, formatBytes(r.flatBufferBytes)],
+    [
+      'Memory limit',
+      `larger of the two (${r.bufferRule === 'multiplier' ? 'safety buffer' : 'minimum buffer'}) is ${formatBytes(r.limitBytes)}, rounded up`,
+      formatGi(r.limitGi),
+    ],
+    ['Memory request', `${formatGi(r.limitGi)} x ${c.requestPercent}%, rounded up`, formatGi(r.requestGi)],
+    ['GOMEMLIMIT', `${formatGi(r.limitGi)} x ${c.gomemlimitPercent}%, rounded down`, `${fmt(r.gomemlimitMiB)}MiB`],
+    ['CPU cores', `max(${c.minCores}, round(${r.limitGi.toFixed(1)} / ${c.memoryPerCoreGiB}))`, String(r.cpuCores)],
+    ['Samples on disk', `${S} / ${inputs.scrapeIntervalSec}s x ${inputs.retentionDays} days x 86400`, fmt(r.totalSamples)],
+    ['Raw disk', `samples x ${c.diskBytesPerSample} B`, formatBytes(r.rawDiskBytes)],
+    ['Disk (PV size)', `raw disk x ${fmt(1 + c.diskBufferPercent / 100, 2)} is ${fmt(r.provisionedDiskBytes / GIB, 1)} GiB, rounded up`, `${fmt(r.diskGi)}Gi`],
+  ];
+
+  return (
+    <Table size="sm" responsive className="mt-2 mb-0 small">
+      <thead>
+        <tr>
+          <th>Step</th>
+          <th>Formula</th>
+          <th className="text-end">Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map(([step, formula, value]) => (
+          <tr key={step}>
+            <td>{step}</td>
+            <td><code>{formula}</code></td>
+            <td className="text-end text-nowrap">{value}</td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
   );
 }
