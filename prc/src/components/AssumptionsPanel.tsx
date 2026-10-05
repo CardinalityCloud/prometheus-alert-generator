@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Badge, Button, Col, Collapse, Form, InputGroup, Row } from 'react-bootstrap';
+import { IconAdjustments, IconCheck, IconChevronDown, IconChevronUp, IconLink } from '@tabler/icons-react';
 import { CONSTANT_FIELDS } from '../sizing';
 import type { ConstantKey } from '../sizing';
 
@@ -41,18 +42,24 @@ export function AssumptionsPanel({ values: v, errors, modified, onChange, onRese
         {' '}{v.diskBytesPerSample} B per sample on disk plus {v.diskBufferPercent}%,
         {' '}{v.memoryPerCoreGiB} GiB of memory per CPU core.
       </small>
-      <div className="d-flex gap-3 flex-wrap">
+      <div className="d-flex gap-2 flex-wrap">
         <Button
-          variant="link"
+          variant="outline-primary"
           size="sm"
-          className="p-0"
           onClick={() => setOpen(!open)}
           aria-expanded={open}
           aria-controls="assumptions-settings"
         >
-          {open ? 'Hide assumptions' : 'Adjust assumptions'}
+          <IconAdjustments size={16} className="me-2" />
+          Adjust assumptions
+          {open
+            ? <IconChevronUp size={16} className="ms-2" />
+            : <IconChevronDown size={16} className="ms-2" />}
         </Button>
-        <Button variant="link" size="sm" className="p-0" onClick={copyLink}>
+        <Button variant="outline-primary" size="sm" onClick={copyLink}>
+          {copied
+            ? <IconCheck size={16} className="me-2" />
+            : <IconLink size={16} className="me-2" />}
           {copied ? 'Link copied' : 'Copy link'}
         </Button>
       </div>
