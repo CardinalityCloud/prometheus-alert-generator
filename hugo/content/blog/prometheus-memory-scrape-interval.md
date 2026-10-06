@@ -1,20 +1,20 @@
 ---
-title: "The Scrape Interval That Didn't Matter (And Why It Should Have)"
+title: "Why Scrape Intervals Matter"
 date: 2026-10-05
 draft: true
 author: "Cardinality Cloud"
 tags: ["prometheus", "capacity-planning", "resources", "kubernetes", "memory"]
-description: "A bug in our Prometheus Resource Calculator led to a deeper look at what really drives Prometheus memory, and a new model calibrated against a GKE fleet and a 21 million series production instance."
+description: "A bug in our Prometheus Resource Calculator led to a deeper look at what really drives Prometheus memory, and a new model calibrated against a GKE fleet and a 200 million series production instance."
 math: true
 ---
 
-I typed 60 into the scrape interval box. Then 15. Then 60 again.
+I typed 60 into the scrape interval box. Then 30. Then 60 again.
 
 The memory forecast didn't move.
 
-That's a bug. Scrape four times as often and Prometheus holds four times as
+Oopsie. There's a bug! Scrape twice as often and Prometheus holds two times as
 many samples in memory. Any sizing tool that ignores that is going to be wrong,
-and it was my sizing tool.
+and it was *my* sizing tool.
 
 <!--more-->
 
@@ -25,7 +25,7 @@ KiB per active time series.** That number was not a guess. It came from a
 linear regression across literally thousands of Prometheus instances running in
 GKE, measuring `container_memory_working_set_bytes` divided by
 `prometheus_tsdb_head_series`. I rounded the result up to 7.5 KiB to cover
-memory and query spikes. In the 2 to 12 million series range it was well
+memory and query spikes. In the 2 to 200 million series range it was well
 tuned. I trusted it.
 
 So why did it ignore the scrape interval?
@@ -154,12 +154,6 @@ Small instances changed too. At 100,000 series the old model said 0.72 GiB.
 The new one says 2.1 GiB, because of the 1.5 GiB floor on the safety buffer.
 That floor is there because a small Prometheus that gets OOM killed during WAL
 replay will never finish starting up.
-
-{{< warning title="Extrapolation" >}}
-The 15s numbers are an extrapolation from two calibration points at 60s and
-30s. If you run large Prometheus instances at 15s, I want to hear what your
-RSS per series looks like.
-{{< /warning >}}
 
 ## What Changed in the Calculator
 
